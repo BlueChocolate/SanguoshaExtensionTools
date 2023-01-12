@@ -1,0 +1,9 @@
+{
+	"sanguosha": "三国杀",
+	"generals":"武将",
+	"skill":"技能",
+	"ai":"AI",
+
+	"sanguoshaExtensionTools":"三国杀扩展工具",
+	"sanguoshaExtensionTools.helloWorld.title": "你好，世界！"
+}

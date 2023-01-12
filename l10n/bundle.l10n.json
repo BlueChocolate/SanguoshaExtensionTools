@@ -1,0 +1,12 @@
+{
+  "Sanguosha Extension Tools is now active!": "Sanguosha Extension Tools is now active!",
+  "compiled successfully": "compiled successfully",
+  "Lua Compilation failed {errorName} {errorMessage}": "Lua Compilation failed {errorName} {errorMessage}",
+  "QSanguosha": "QSanguosha",
+  "Noname": "Noname",
+  "FreeKill": "FreeKill",
+  "Please select the type of Sanguosha extension": "Please select the type of Sanguosha extension",
+  "Please enter a identification name for the package": "Please enter a identification name for the package",
+  "The extension package identification name can only consist of numbers, letters or underscores, and cannot start with a number!": "The extension package identification name can only consist of numbers, letters or underscores, and cannot start with a number!",
+  "This feature is not yet implemented": "This feature is not yet implemented"
+}

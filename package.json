@@ -1,0 +1,212 @@
+{
+  "name": "sanguosha-extension-tools",
+  "displayName": "Sanguosha Extension Tools",
+  "description": "A toolset to help develop Sanguosha extensions.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other",
+    "Programming Languages"
+  ],
+  "icon": "",
+  "activationEvents": [
+    "onView:sanguosha"
+  ],
+  "main": "./out/extension.js",
+  "l10n": "./l10n",
+  "contributes": {
+    "viewsWelcome": [
+      {
+        "view": "sanguoshaPackages",
+        "contents": "你似乎没有在 VS Code 中打开文件夹, 打开一个文件夹吗? [更多](https://www.jiecao.store/)\n[Open New Folder](command:vscode.openFolder)"
+      },
+      {
+        "view": "sanguoshaPackages",
+        "contents": "No extension file here, create one? [learn more](https://www.npmjs.com/).\n[Create Extension](command:sanguoshaExtensionTools.createNewExtension)\n"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "sanguosha",
+          "title": "Sanguosha Extension Tools",
+          "icon": "resources/sanguosha.svg"
+        }
+      ]
+    },
+    "views": {
+      "sanguosha": [
+        {
+          "id": "sanguoshaTasks",
+          "name": "Tasks",
+          "icon": "resources/sanguosha.svg",
+          "contextualTitle": "Sanguosha Tasks",
+          "visibility": "hidden"
+        },
+        {
+          "id": "sanguoshaPackages",
+          "name": "Packages",
+          "icon": "resources/game.svg",
+          "contextualTitle": "Sanguosha Packages"
+        },
+        {
+          "id": "sanguoshaGenerals",
+          "name": "%generals%",
+          "icon": "resources/game.svg",
+          "contextualTitle": "Sanguosha Generals"
+        },
+        {
+          "id": "sanguoshaSkills",
+          "name": "%skill%",
+          "icon": "resources/game.svg",
+          "contextualTitle": "Sanguosha Skill"
+        }
+      ]
+    },
+    "configuration": [
+      {
+        "title": "Configuration Samples",
+        "properties": {
+          "sanguoshaExtensionTools.enableCodeLens": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to display Code Lens above the function."
+          },
+          "sanguoshaExtensionTools.extension.type": {
+            "type": "string",
+            "enum": [
+              "qSanguosha",
+              "noname",
+              "freeKill"
+            ],
+            "default": "explorer",
+            "description": "Window configuration: View to show always when a window opens",
+            "scope": "window"
+          },
+          "conf.resource.insertEmptyLastLine": {
+            "type": "object",
+            "default": {},
+            "description": "Resource configuration: Configure files using glob patterns to have an empty last line always",
+            "scope": "resource"
+          },
+          "conf.language.showSize": {
+            "type": "boolean",
+            "default": false,
+            "description": "Shows the size of the document",
+            "scope": "language-overridable"
+          }
+        }
+      }
+    ],
+    "commands": [
+      {
+        "command": "sanguoshaExtensionTools.helloWorld",
+        "title": "%sanguoshaExtensionTools.helloWorld.title%",
+        "category": "Sanguosha"
+      },
+      {
+        "command": "sanguoshaExtensionTools.showDebugTools",
+        "title": "Show Debug Tools",
+        "category": "Sanguosha"
+      },
+      {
+        "command": "sanguoshaExtensionTools.enableCodeLens",
+        "title": "Enable CodeLens",
+        "category": "Sanguosha"
+      },
+      {
+        "command": "sanguoshaExtensionTools.disableCodeLens",
+        "title": "Disable Codelens",
+        "category": "Sanguosha"
+      },
+      {
+        "command": "sanguoshaExtensionTools.refreshExtension",
+        "title": "Refresh Sanguosha Extension",
+        "icon": {
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "sanguoshaExtensionTools.createNewExtension",
+        "title": "Create New Sanguosha Extension"
+      },
+      {
+        "command": "sanguoshaExtensionTools.addGeneral",
+        "title": "Add Sanguosha General",
+        "icon": {
+          "light": "resources/light/add.svg",
+          "dark": "resources/dark/add.svg"
+        }
+      },
+      {
+        "command": "sanguoshaExtensionTools.editGeneral",
+        "title": "Edit Sanguosha General",
+        "icon": {
+          "light": "resources/light/edit.svg",
+          "dark": "resources/dark/edit.svg"
+        }
+      },
+      {
+        "command": "sanguoshaExtensionTools.startTask",
+        "title": "Start task.",
+        "icon": {
+          "light": "resources/light/play.svg",
+          "dark": "resources/dark/play.svg"
+        }
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "sanguoshaExtensionTools.refreshExtension",
+          "when": "view == sanguoshaPackages",
+          "group": "navigation"
+        },
+        {
+          "command": "sanguoshaExtensionTools.addGeneral",
+          "when": "view == sanguoshaPackages",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "sanguoshaExtensionTools.startTask",
+          "when": "view == sanguoshaTasks && viewItem == sanguoshaTask",
+          "group": "inline"
+        },
+        {
+          "command": "sanguoshaExtensionTools.editGeneral",
+          "when": "view == sanguoshaGenerals && viewItem == sanguoshaGeneral"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.0.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "@types/vscode": "^1.74.0",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
+    "@vscode/test-electron": "^2.2.0",
+    "eslint": "^8.28.0",
+    "glob": "^8.0.3",
+    "mocha": "^10.1.0",
+    "typescript": "^4.9.3"
+  },
+  "dependencies": {
+    "@types/luaparse": "^0.2.8",
+    "luaparse": "^0.3.1"
+  }
+}
