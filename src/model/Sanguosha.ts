@@ -1,10 +1,10 @@
-import { Uri } from 'vscode';
-import { SanguoshaHelper } from './helper/extensionHelper';
-import { LuaAstHelper } from './helper/languageHelper';
+import { LuaAstHelper } from "../helper/LuaAstHelper";
+import { Package, PcakageType } from "./Package";
+import { General } from "./General";
 
 enum SanguoshaType {
   qSanguosha,
-  noname,
+  noname
 }
 
 export class Sanguosha {
@@ -13,7 +13,7 @@ export class Sanguosha {
   }
   public sanguoshaType: SanguoshaType = SanguoshaType.qSanguosha;
   public packages: Package[] = new Array<Package>();
-  public translations: { key: string, value: string }[] = [];
+  public translations: { key: string; value: string; }[] = [];
 
   public getTranslation(key: string) {
     return this.translations.find(item => item.key === key)?.value;
@@ -34,7 +34,6 @@ export class Sanguosha {
       // }); // 遍历语法树
       // astToSource(-1, ast, "");
       // console.log(astToSourceResult);
-
     } catch (error) {
       console.error(error);
     }
@@ -384,49 +383,4 @@ export class Sanguosha {
   readNonameRaw() {
     throw new Error('Function not implemented.');
   }
-}
-
-enum PcakageType { generalPack, cardPack, specialPack }
-class Package {
-  constructor() { }
-  type: PcakageType = PcakageType.generalPack;
-  trsName: string | undefined;
-  varName: string | undefined;
-
-  generals: General[] = [];
-  cards: Card[] = [];
-}
-
-class GeneralPackage extends Package {
-
-}
-
-class Skill {
-
-}
-
-class General {
-  varName: string = "";
-  packageVarName: string = "";
-  trsName: string = "";
-  kingdom: string = "";
-  hp: number = 0;
-  isMale: boolean = true;
-  isHidden: boolean = false;
-  isNeverShown: boolean = false;
-  hegMaxHp: number = 0; // 啥玩意
-
-
-
-}
-
-class Card {
-
-}
-
-
-export let sanguosha = new Sanguosha();
-
-export function refresh(): void {
-  sanguosha = new Sanguosha();
 }

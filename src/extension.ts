@@ -1,22 +1,23 @@
 import { SanguoshaGeneralsProvider } from './provider/SanguoshaGeneralsProvider';
 import { SanguoshaTasksProvider } from './provider/SanguoshaTasksProvider';
 import { SanguoshaCodelensProvider } from './provider/SanguoshaCodelensProvider';
-import * as sgs from './sanguosha';
-import { LuaAstHelper } from './helper/languageHelper';
-import { LogHelper } from './helper/vscodeHelper';
-import { QsgsHelper, SanguoshaHelper } from './helper/extensionHelper';
-import { Disposable, ExtensionContext, Uri, l10n, workspace, window, languages, commands, ConfigurationTarget } from 'vscode';
+import { LuaAstHelper } from "./helper/LuaAstHelper";
+import { LogHelper } from "./helper/LogHelper";
+import { QsgsHelper } from "./helper/QsgsHelper";
+import { Disposable, ExtensionContext, Uri, l10n, workspace, window, languages, commands, ConfigurationTarget, StatusBarAlignment } from 'vscode';
+import { FileSystemHelper } from './helper/FileSystemHelper';
+import { SanguoshaHelper } from './helper/SanguoshaHelper';
 
 // 一次性对象列表
 let disposables: Disposable[] = [];
 
 // 当你的扩展被激活时调用这个方法，只执行一次
-export function activate(context: ExtensionContext) {
+export async function activate(context: ExtensionContext) {
 
 	// 输出日志信息
 	LogHelper.log(l10n.t('Sanguosha Extension Tools is now active!'));
 
-	// NOTE 注册基础命令
+	// NOTE 注册命令
 	// Hello World 命令
 	let helloWorldCommand = commands.registerCommand('sanguoshaExtensionTools.helloWorld', async () => {
 
@@ -145,7 +146,7 @@ export function activate(context: ExtensionContext) {
 	});
 	// 编辑武将
 	commands.registerCommand('sanguoshaExtensionTools.editGeneral', () => window.showInformationMessage('编辑武将!'));
-	// debug
+	// 调试工具
 	commands.registerCommand('sanguoshaExtensionTools.showDebugTools', async () => {
 		const select = await window.showQuickPick([
 			{ label: 'Source code to json AST in new file', description: '将当前打开的 Lua 文件转换为 Json 格式的 AST 并在新文件中打开', id: 1 },
@@ -175,12 +176,41 @@ export function activate(context: ExtensionContext) {
 			}
 		}
 	});
+	// 开始 task
 	commands.registerCommand('sanguoshaExtensionTools.startTask', () => window.showInformationMessage('开始!'));
+	// 完整加载三国杀扩展包
+	commands.registerCommand('sanguoshaExtensionTools.loadExtensions', () => {
 
-	// 当前打开的文件夹
+	});
+
+	// NOTE 注册事件
+	// 文件监视器
+	let watcher = workspace.createFileSystemWatcher('**/*');
+	watcher.onDidChange(e => {
+		LogHelper.log(`File ${e.fsPath} has changed.`);
+	});
+	watcher.onDidCreate(e => {
+		LogHelper.log(`File ${e.fsPath} has created.`);
+	});
+	watcher.onDidDelete(e => {
+		LogHelper.log(`File ${e.fsPath} has deleted.`);
+	});
+	// 文件内容更改
+	workspace.onDidChangeTextDocument(function (e) {
+		console.log('changed.');
+		// console.log(e.document.isDirty);
+	});
+	// 文件内容保存
+	workspace.onDidSaveTextDocument(function (e) {
+		console.log('saved.');
+	});
+
+
+
+	// NOTE 尝试获取当前打开的文件夹
 	const rootPath = workspace.workspaceFolders && workspace.workspaceFolders.length > 0 ? workspace.workspaceFolders[0].uri.fsPath : undefined;
 
-	// 工作区文件夹可能不止一个，第 0 个就是当前的
+	// 这个方法同样可以文件夹，但工作区文件夹可能不止一个，所以第 0 个就是当前文件夹
 	const rootUri = workspace.workspaceFolders && workspace.workspaceFolders.length > 0 ? workspace.workspaceFolders[0].uri : undefined;
 	console.log(workspace.getConfiguration().has('sanguoshaExtensionTools.extension.type'));
 	if (!rootPath) {
@@ -191,43 +221,39 @@ export function activate(context: ExtensionContext) {
 		return;
 	}
 
-	let type=workspace.getConfiguration().inspect('sanguoshaExtensionTools.extension.type')?.workspaceValue;
-		if (type) {
-			// TODO 读取三国杀扩展
-		} else {
-			if (true) {
-				
-			} else {
-				
+	// NOTE 尝试从工作区配置中读取三国杀类型
+	let type = workspace.getConfiguration().inspect('sanguoshaExtensionTools.extension.type')?.workspaceValue;
+	if (type) {
+		// TODO 读取三国杀扩展
+
+	} else {
+		if (true) {
+			type = SanguoshaHelper.detachSanguoshaType(rootUri).then(() => {
+				// TODO 读取三国杀扩展？？？
+			}).catch((error) => {
+
+			});
+			if (type) {
+				type = '123';
 			}
+		} else {
+
 		}
+	}
 
 
 	const sanguoshaGeneralsProvider = new SanguoshaGeneralsProvider(rootPath);
-	// NOTE 注册数据提供者
+	// NOTE 注册提供者
 	window.registerTreeDataProvider('sanguoshaTasks', new SanguoshaTasksProvider());
 	// window.registerTreeDataProvider('sanguoshaPackages', new sgs.SanguoshaTasksProvider());
 
-	
+
 	window.registerTreeDataProvider('sanguoshaGenerals', sanguoshaGeneralsProvider);
 
 	// 注册 CodeLens 提供者
 	const codelensProvider = new SanguoshaCodelensProvider();
 	languages.registerCodeLensProvider("*", codelensProvider);
 
-
-
-
-	// NOTE 注册事件
-	// 文件内容更改
-	workspace.onDidChangeTextDocument(function (e) {
-		console.log('changed.');
-		console.log(e.document.isDirty);
-	});
-	// 文件内容保存
-	workspace.onDidSaveTextDocument(function (e) {
-		console.log('saved.');
-	});
 
 	// 回收所有一次性对象
 	if (disposables) {

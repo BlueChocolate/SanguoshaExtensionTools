@@ -62,6 +62,12 @@
           "name": "%skill%",
           "icon": "resources/game.svg",
           "contextualTitle": "Sanguosha Skill"
+        },
+        {
+          "id": "sanguoshaAi",
+          "name": "%ai%",
+          "icon": "resources/game.svg",
+          "contextualTitle": "Sanguosha AI"
         }
       ]
     },

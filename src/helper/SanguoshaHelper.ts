@@ -1,52 +1,11 @@
 import * as path from 'path';
 import { ConfigurationTarget, FileType, l10n, Uri, window, workspace } from 'vscode';
-import { FileSystemHelper, LogHelper } from './vscodeHelper';
-
-export abstract class QsgsHelper {
-
-    static async createNewExtension(uri: Uri, name: string) {
-
-        if (uri) {
-            await workspace.fs.createDirectory(Uri.joinPath(uri, 'extensions'));
-            await workspace.fs.createDirectory(Uri.joinPath(uri, 'lua', 'ai'));
-            await workspace.fs.createDirectory(Uri.joinPath(uri, 'audio', 'bgm'));
-            await workspace.fs.createDirectory(Uri.joinPath(uri, 'audio', 'death'));
-            await workspace.fs.createDirectory(Uri.joinPath(uri, 'audio', 'skill'));
-            await workspace.fs.createDirectory(Uri.joinPath(uri, 'image', 'mark'));
-            await workspace.fs.createDirectory(Uri.joinPath(uri, 'image', 'animate'));
-            await workspace.fs.createDirectory(Uri.joinPath(uri, 'image', 'generals', 'card'));
-            await workspace.fs.createDirectory(Uri.joinPath(uri, 'image', 'generals', 'avatar'));
-            await workspace.fs.createDirectory(Uri.joinPath(uri, 'image', 'fullskin', 'generals', 'full'));
-
-            const writeStr = name.length > 1 ? (name.slice(0, 1).toUpperCase() + name.slice(1).toLowerCase()) : name.toUpperCase() + ' = sgs.Package("' + name + '")\n\nreturn Dominion';
-            const writeData = Buffer.from(writeStr, 'utf-8');
-
-            await workspace.fs.writeFile(Uri.joinPath(uri, 'extensions', name + '.lua'), writeData);
-            await workspace.fs.writeFile(Uri.joinPath(uri, 'lua', 'ai', name + '-ai.lua',), new Uint8Array());
-        }
-    }
-
-    static getGeneralAvatarByName() {
-
-    }
-
-    static getGeneralCardByName() {
-
-    }
-
-    static getAvatarByName() {
-
-    }
+import { LogHelper } from "./LogHelper";
+import { FileSystemHelper } from "./FileSystemHelper";
+import { BaseHelper } from './BaseHelper';
 
 
-}
-
-export abstract class NonameHelper {
-
-}
-
-export abstract class SanguoshaHelper {
-
+export class SanguoshaHelper extends BaseHelper {
 
     /* NOTE 太阳神三国杀扩展目录结构
     ├─audio
@@ -69,9 +28,9 @@ export abstract class SanguoshaHelper {
         └─ai(*.lua)
 */
     /** 检测指定路径中三国杀扩展的类型
-     * 
+     *
      * @param rootUri 指定路径
-     * @returns 
+     * @returns
      */
     public static async detachSanguoshaType(rootUri: Uri): Promise<'qSanguosha' | 'noname' | undefined> {
 

@@ -1,6 +1,8 @@
 import * as lua from 'luaparse';
+import { BaseHelper } from './BaseHelper';
 
-export abstract class LuaAstHelper {
+
+export class LuaAstHelper extends BaseHelper {
     /**
      * 解析 Lua 源代码（版本 5.2），返回抽象语法树（AST）
      * @param luaRaw Lua源代码字符串
@@ -146,7 +148,7 @@ export abstract class LuaAstHelper {
     }
 
     /**
-     * 将 AST 转换为源码 
+     * 将 AST 转换为源码
      * @param node AST 的 JSON 对象
      * @returns AST 对应的源码（删除了注释）
      */
@@ -388,7 +390,4 @@ export abstract class LuaAstHelper {
             return { name: ast['name'], range: ast['range'] as [] };
         }
     }
-}
-
-export abstract class JsAstHelper {
 }

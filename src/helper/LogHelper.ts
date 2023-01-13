@@ -1,6 +1,8 @@
-import { FileType, Uri, window, workspace } from 'vscode';
+import { window } from 'vscode';
+import { BaseHelper } from './BaseHelper';
 
-export abstract class LogHelper {
+
+export class LogHelper extends BaseHelper {
 
     // 创建输出频道
     // public static channel = vscode.window.createOutputChannel('SanguoshaExtensionTools', 'log');
@@ -75,28 +77,3 @@ export abstract class LogHelper {
     }
 
 }
-
-export abstract class FileSystemHelper {
-
-    public static async uriExists(uri: Uri, type?: FileType): Promise<boolean> {
-        try {
-            let stat = await workspace.fs.stat(uri);
-            if (type) {
-                if (stat.type === type) {
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                return true;
-            }
-        } catch (error) {
-            if ((error as Error).name === 'EntryNotFound (FileSystemError)') {
-                return false;
-            } else {
-                throw error;
-            }
-        }
-    }
-}
-
