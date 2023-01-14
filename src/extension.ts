@@ -17,7 +17,7 @@ export async function activate(context: ExtensionContext) {
 	// 输出日志信息
 	LogHelper.log(l10n.t('Sanguosha Extension Tools is now active!'));
 
-	// NOTE 注册命令
+	// NOTE 注册初始命令
 	// Hello World 命令
 	let helloWorldCommand = commands.registerCommand('sanguoshaExtensionTools.helloWorld', async () => {
 
@@ -206,13 +206,11 @@ export async function activate(context: ExtensionContext) {
 	});
 
 
-
 	// NOTE 尝试获取当前打开的文件夹
 	const rootPath = workspace.workspaceFolders && workspace.workspaceFolders.length > 0 ? workspace.workspaceFolders[0].uri.fsPath : undefined;
-
 	// 这个方法同样可以文件夹，但工作区文件夹可能不止一个，所以第 0 个就是当前文件夹
 	const rootUri = workspace.workspaceFolders && workspace.workspaceFolders.length > 0 ? workspace.workspaceFolders[0].uri : undefined;
-	console.log(workspace.getConfiguration().has('sanguoshaExtensionTools.extension.type'));
+
 	if (!rootPath) {
 		return;
 	}
@@ -221,21 +219,24 @@ export async function activate(context: ExtensionContext) {
 		return;
 	}
 
+
 	// NOTE 尝试从工作区配置中读取三国杀类型
+	// 使用了选链运算符，因此 inspect() 返回 undefined 也不会抛出异常
 	let type = workspace.getConfiguration().inspect('sanguoshaExtensionTools.extension.type')?.workspaceValue;
 	if (type) {
+		const validTypes = ['qSanguosha', 'noname', 'freeKill'];
+		if (typeof type === 'string' && validTypes.includes(type)) {
+			SanguoshaHelper.load(rootUri, type as 'qSanguosha' | 'noname' | 'freeKill');
+
+		} else {
+			LogHelper.log(l10n.t('The Sanguosha extension type saved in the workspace configuration is invalid!'),'error');
+		}
 		// TODO 读取三国杀扩展
-
 	} else {
-		if (true) {
-			type = SanguoshaHelper.detachSanguoshaType(rootUri).then(() => {
-				// TODO 读取三国杀扩展？？？
-			}).catch((error) => {
+		let type = await SanguoshaHelper.detachSanguoshaType(rootUri);
+		if (type) {
 
-			});
-			if (type) {
-				type = '123';
-			}
+
 		} else {
 
 		}
@@ -259,7 +260,6 @@ export async function activate(context: ExtensionContext) {
 	if (disposables) {
 		disposables.forEach(item => context.subscriptions.push(item));
 	}
-	// context.subscriptions.concat(disposables); // 没试过这种
 }
 
 // 当你的扩展被停用时调用这个方法

@@ -3,9 +3,21 @@ import { ConfigurationTarget, FileType, l10n, Uri, window, workspace } from 'vsc
 import { LogHelper } from "./LogHelper";
 import { FileSystemHelper } from "./FileSystemHelper";
 import { BaseHelper } from './BaseHelper';
+import { Sanguosha } from '../model/Sanguosha';
 
 
 export class SanguoshaHelper extends BaseHelper {
+
+    public static sanguosha: Sanguosha;
+    public static rootUri: Uri;
+
+
+    public static load(rootUri: Uri, type: 'qSanguosha' | 'noname' | 'freeKill') {
+        SanguoshaHelper.sanguosha = new Sanguosha();
+        SanguoshaHelper.sanguosha.sanguoshaType = type;
+
+
+    }
 
     /* NOTE 太阳神三国杀扩展目录结构
     ├─audio
@@ -27,12 +39,7 @@ export class SanguoshaHelper extends BaseHelper {
     └─lua
         └─ai(*.lua)
 */
-    /** 检测指定路径中三国杀扩展的类型
-     *
-     * @param rootUri 指定路径
-     * @returns
-     */
-    public static async detachSanguoshaType(rootUri: Uri): Promise<'qSanguosha' | 'noname' | undefined> {
+    public static async detachSanguoshaType(rootUri: Uri): Promise<'qSanguosha' | 'noname' | 'freeKill' | undefined> {
 
         try {
             // 判断是否存在 .\extensions 目录

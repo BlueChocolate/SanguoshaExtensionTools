@@ -4,7 +4,7 @@ import { BaseHelper } from './BaseHelper';
 
 export class QsgsHelper extends BaseHelper {
 
-    static async createNewExtension(uri: Uri, name: string) {
+    static async createNewExtension(uri: Uri, trsName: string) {
 
         if (uri) {
             await workspace.fs.createDirectory(Uri.joinPath(uri, 'extensions'));
@@ -18,11 +18,12 @@ export class QsgsHelper extends BaseHelper {
             await workspace.fs.createDirectory(Uri.joinPath(uri, 'image', 'generals', 'avatar'));
             await workspace.fs.createDirectory(Uri.joinPath(uri, 'image', 'fullskin', 'generals', 'full'));
 
-            const writeStr = name.length > 1 ? (name.slice(0, 1).toUpperCase() + name.slice(1).toLowerCase()) : name.toUpperCase() + ' = sgs.Package("' + name + '")\n\nreturn Dominion';
+            let varName = trsName.length > 1 ? (trsName.slice(0, 1).toUpperCase() + trsName.slice(1).toLowerCase()) : trsName.toUpperCase();
+            const writeStr = varName + ' = sgs.Package("' + trsName + '")\n\nreturn ' + varName;
             const writeData = Buffer.from(writeStr, 'utf-8');
 
-            await workspace.fs.writeFile(Uri.joinPath(uri, 'extensions', name + '.lua'), writeData);
-            await workspace.fs.writeFile(Uri.joinPath(uri, 'lua', 'ai', name + '-ai.lua'), new Uint8Array());
+            await workspace.fs.writeFile(Uri.joinPath(uri, 'extensions', trsName + '.lua'), writeData);
+            await workspace.fs.writeFile(Uri.joinPath(uri, 'lua', 'ai', trsName + '-ai.lua'), new Uint8Array());
         }
     }
 

@@ -2,21 +2,15 @@ import { LuaAstHelper } from "../helper/LuaAstHelper";
 import { Package, PcakageType } from "./Package";
 import { General } from "./General";
 
-enum SanguoshaType {
-  qSanguosha,
-  noname
-}
-
 export class Sanguosha {
-  constructor() {
-    this.sanguoshaType = SanguoshaType.qSanguosha;
-  }
-  public sanguoshaType: SanguoshaType = SanguoshaType.qSanguosha;
+
+  public sanguoshaType: 'qSanguosha' | 'noname' | 'freeKill' = 'qSanguosha';
   public packages: Package[] = new Array<Package>();
   public translations: { key: string; value: string; }[] = [];
 
   public getTranslation(key: string) {
-    return this.translations.find(item => item.key === key)?.value;
+    let value = this.translations.find(item => item.key === key)?.value;
+    return value ? value : key;
   }
 
   readQsgsRaw(luaRaw: string) {
