@@ -1,47 +1,53 @@
-import * as vscode from 'vscode';
-import * as path from 'path';
-import * as fs from 'fs';
+import { Event, EventEmitter, TreeDataProvider, TreeItem, TreeItemCollapsibleState, Uri, window } from 'vscode';
+import { LogHelper } from '../helpers/LogHelper';
+import { SanguoshaHelper } from '../helpers/SanguoshaHelper';
+import { Sanguosha } from '../models/Sanguosha';
 
-export class SanguoshaGeneralsProvider implements vscode.TreeDataProvider<SanguoshaGeneral> {
-    constructor(private workspaceRoot: string) { }
+export class SanguoshaGeneralsProvider implements TreeDataProvider<SanguoshaGeneral> {
+    private _onDidChangeTreeData: EventEmitter<SanguoshaGeneral | undefined | null | void> = new EventEmitter<SanguoshaGeneral | undefined | null | void>();
+    readonly onDidChangeTreeData: Event<SanguoshaGeneral | undefined | null | void> = this._onDidChangeTreeData.event;
+    private sanguosha?: Sanguosha = new Sanguosha();
+    private rootUri: Uri;
 
-    // 用于刷新
-    private _onDidChangeTreeData: vscode.EventEmitter<SanguoshaGeneral | undefined | null | void> = new vscode.EventEmitter<SanguoshaGeneral | undefined | null | void>();
-    readonly onDidChangeTreeData: vscode.Event<SanguoshaGeneral | undefined | null | void> = this._onDidChangeTreeData.event;
-    refresh(): void {
-        this._onDidChangeTreeData.fire();
-        console.log(path.join(__filename, '..', '..', 'resources', 'light', 'task.svg'));
+    constructor(rootUri: Uri) {
+        this.rootUri = rootUri;
     }
 
-    getTreeItem(element: SanguoshaGeneral): vscode.TreeItem {
+    // 用于刷新
+    refresh(): void {
+        
+        this._onDidChangeTreeData.fire();
+        LogHelper.log(__filename);
+    }
+
+    getTreeItem(element: SanguoshaGeneral): TreeItem {
         return element;
     }
 
     getChildren(element?: SanguoshaGeneral): Thenable<SanguoshaGeneral[]> {
         // 判断工作区目录是否为空
-        if (!this.workspaceRoot) {
-            vscode.window.showInformationMessage('No dependency in empty workspace');
+        if (!this.rootUri) {
+            window.showInformationMessage('No dependency in empty workspace');
             return Promise.resolve([]);
         }
 
         if (element) {
             // 含参数执行，子节点
             return Promise.resolve(
-                this.getDepsInPackageJson(
-                    path.join(this.workspaceRoot, 'node_modules', element.label, 'package.json')
-                )
+                this.getDepsInPackageJson()
+
             );
         } else {
-            // 无参数执行，第一层节点
-            const packageJsonPath = path.join(this.workspaceRoot, 'package.json');
+            // 无参数执行，根节点
+
             if (this.pathExists(packageJsonPath)) {
                 return Promise.resolve(this.getDepsInPackageJson(packageJsonPath));
             } else {
-                vscode.window.showInformationMessage('Workspace has no package.json');
+                window.showInformationMessage('Workspace has no package.json');
                 return Promise.resolve([]);
             }
 
-            const generalPath = path.join(this.workspaceRoot, 'extensions');
+            const generalPath = path.join(this.rootUri, 'extensions');
         }
     }
 
@@ -53,14 +59,14 @@ export class SanguoshaGeneralsProvider implements vscode.TreeDataProvider<Sanguo
             const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
 
             const toDep = (moduleName: string, version: string): SanguoshaGeneral => {
-                if (this.pathExists(path.join(this.workspaceRoot, 'node_modules', moduleName))) {
+                if (this.pathExists(path.join(this.rootUri, 'node_modules', moduleName))) {
                     return new SanguoshaGeneral(
                         moduleName,
                         version,
-                        vscode.TreeItemCollapsibleState.Collapsed
+                        TreeItemCollapsibleState.Collapsed
                     );
                 } else {
-                    return new SanguoshaGeneral(moduleName, version, vscode.TreeItemCollapsibleState.None);
+                    return new SanguoshaGeneral(moduleName, version, TreeItemCollapsibleState.None);
                 }
             };
 
@@ -79,21 +85,12 @@ export class SanguoshaGeneralsProvider implements vscode.TreeDataProvider<Sanguo
             return [];
         }
     }
-
-    private pathExists(p: string): boolean {
-        try {
-            fs.accessSync(p);
-        } catch (err) {
-            return false;
-        }
-        return true;
-    }
 }
-class SanguoshaGeneral extends vscode.TreeItem {
+class SanguoshaGeneral extends TreeItem {
     constructor(
         public readonly label: string,
         private version: string,
-        public readonly collapsibleState: vscode.TreeItemCollapsibleState
+        public readonly collapsibleState: TreeItemCollapsibleState
     ) {
         super(label, collapsibleState);
         this.tooltip = `${this.label}-${this.version}`;
@@ -101,7 +98,7 @@ class SanguoshaGeneral extends vscode.TreeItem {
     }
 
     iconPath = {
-        light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
-        dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
+        light: Uri.joinPath(Uri.file(__filename), '..', '..', 'resources', 'light', 'dependency.svg'),
+        dark: Uri.joinPath(Uri.file(__filename), '..', '..', 'resources', 'dark', 'dependency.svg')
     };
 }

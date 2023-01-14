@@ -1,11 +1,13 @@
-import { LuaAstHelper } from "../helper/LuaAstHelper";
+import { LuaAstHelper } from "../helpers/LuaAstHelper";
 import { Package, PcakageType } from "./Package";
 import { General } from "./General";
+import { l10n } from "vscode";
 
 export class Sanguosha {
 
   public sanguoshaType: 'qSanguosha' | 'noname' | 'freeKill' = 'qSanguosha';
   public packages: Package[] = new Array<Package>();
+  public ai:Ai[]=[];
   public translations: { key: string; value: string; }[] = [];
 
   public getTranslation(key: string) {
@@ -375,6 +377,10 @@ export class Sanguosha {
   }
 
   readNonameRaw() {
-    throw new Error('Function not implemented.');
+    throw new Error(l10n.t('Function not implemented.'));
+  }
+
+  readFreeKillRaw() {
+    throw new Error(l10n.t('Function not implemented.'));
   }
 }

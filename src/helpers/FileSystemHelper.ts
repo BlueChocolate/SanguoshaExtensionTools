@@ -5,6 +5,8 @@ import { LogHelper } from './LogHelper';
 
 export class FileSystemHelper extends BaseHelper {
 
+    
+
     public static async uriExists(uri: Uri, type?: FileType): Promise<boolean> {
         try {
             let stat = await workspace.fs.stat(uri);

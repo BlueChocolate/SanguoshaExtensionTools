@@ -1,12 +1,12 @@
-import { SanguoshaGeneralsProvider } from './provider/SanguoshaGeneralsProvider';
-import { SanguoshaTasksProvider } from './provider/SanguoshaTasksProvider';
-import { SanguoshaCodelensProvider } from './provider/SanguoshaCodelensProvider';
-import { LuaAstHelper } from "./helper/LuaAstHelper";
-import { LogHelper } from "./helper/LogHelper";
-import { QsgsHelper } from "./helper/QsgsHelper";
+import { SanguoshaGeneralsProvider } from './providers/SanguoshaGeneralsProvider';
+import { SanguoshaSkillsProvider } from './providers/SanguoshaTasksProvider';
+import { SanguoshaCodelensProvider } from './providers/SanguoshaCodelensProvider';
+import { LuaAstHelper } from "./helpers/LuaAstHelper";
+import { LogHelper } from "./helpers/LogHelper";
+import { QsgsHelper } from "./helpers/QsgsHelper";
 import { Disposable, ExtensionContext, Uri, l10n, workspace, window, languages, commands, ConfigurationTarget, StatusBarAlignment } from 'vscode';
-import { FileSystemHelper } from './helper/FileSystemHelper';
-import { SanguoshaHelper } from './helper/SanguoshaHelper';
+import { FileSystemHelper } from './helpers/FileSystemHelper';
+import { SanguoshaHelper } from './helpers/SanguoshaHelper';
 
 // 一次性对象列表
 let disposables: Disposable[] = [];
@@ -207,18 +207,12 @@ export async function activate(context: ExtensionContext) {
 
 
 	// NOTE 尝试获取当前打开的文件夹
-	const rootPath = workspace.workspaceFolders && workspace.workspaceFolders.length > 0 ? workspace.workspaceFolders[0].uri.fsPath : undefined;
 	// 这个方法同样可以文件夹，但工作区文件夹可能不止一个，所以第 0 个就是当前文件夹
 	const rootUri = workspace.workspaceFolders && workspace.workspaceFolders.length > 0 ? workspace.workspaceFolders[0].uri : undefined;
-
-	if (!rootPath) {
-		return;
-	}
 
 	if (!rootUri) {
 		return;
 	}
-
 
 	// NOTE 尝试从工作区配置中读取三国杀类型
 	// 使用了选链运算符，因此 inspect() 返回 undefined 也不会抛出异常
@@ -243,9 +237,9 @@ export async function activate(context: ExtensionContext) {
 	}
 
 
-	const sanguoshaGeneralsProvider = new SanguoshaGeneralsProvider(rootPath);
+	const sanguoshaGeneralsProvider = new SanguoshaGeneralsProvider(rootUri);
 	// NOTE 注册提供者
-	window.registerTreeDataProvider('sanguoshaTasks', new SanguoshaTasksProvider());
+	window.registerTreeDataProvider('sanguoshaTasks', new SanguoshaSkillsProvider());
 	// window.registerTreeDataProvider('sanguoshaPackages', new sgs.SanguoshaTasksProvider());
 
 

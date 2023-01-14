@@ -3,7 +3,7 @@ import { ConfigurationTarget, FileType, l10n, Uri, window, workspace } from 'vsc
 import { LogHelper } from "./LogHelper";
 import { FileSystemHelper } from "./FileSystemHelper";
 import { BaseHelper } from './BaseHelper';
-import { Sanguosha } from '../model/Sanguosha';
+import { Sanguosha } from '../models/Sanguosha';
 
 
 export class SanguoshaHelper extends BaseHelper {
