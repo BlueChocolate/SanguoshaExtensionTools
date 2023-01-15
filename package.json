@@ -47,7 +47,7 @@
         },
         {
           "id": "sanguoshaPackages",
-          "name": "Packages",
+          "name": "%packages%",
           "icon": "resources/game.svg",
           "contextualTitle": "Sanguosha Packages"
         },

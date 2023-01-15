@@ -1,12 +1,13 @@
 import { SanguoshaGeneralsProvider } from './providers/SanguoshaGeneralsProvider';
-import { SanguoshaSkillsProvider } from './providers/SanguoshaTasksProvider';
+import { SanguoshaPackagesProvider } from './providers/SanguoshaPackagesProvider';
 import { SanguoshaCodelensProvider } from './providers/SanguoshaCodelensProvider';
 import { LuaAstHelper } from "./helpers/LuaAstHelper";
 import { LogHelper } from "./helpers/LogHelper";
 import { QsgsHelper } from "./helpers/QsgsHelper";
-import { Disposable, ExtensionContext, Uri, l10n, workspace, window, languages, commands, ConfigurationTarget, StatusBarAlignment } from 'vscode';
+import { Disposable, ExtensionContext, Uri, l10n, workspace, window, languages, commands, ConfigurationTarget, StatusBarAlignment, Position, Range, TextEditorRevealType, Selection } from 'vscode';
 import { FileSystemHelper } from './helpers/FileSystemHelper';
 import { SanguoshaHelper } from './helpers/SanguoshaHelper';
+import { SanguoshaSkillsProvider } from './providers/SanguoshaTasksProvider';
 
 // 一次性对象列表
 let disposables: Disposable[] = [];
@@ -72,6 +73,7 @@ export async function activate(context: ExtensionContext) {
 	// 刷新三国杀扩展
 	commands.registerCommand('sanguoshaExtensionTools.refreshExtension', () => {
 		sanguoshaGeneralsProvider.refresh();
+		sanguoshaPackagesProvider.refresh();
 	});
 	// 创建三国杀扩展
 	commands.registerCommand('sanguoshaExtensionTools.createNewExtension', async () => {
@@ -182,27 +184,44 @@ export async function activate(context: ExtensionContext) {
 	commands.registerCommand('sanguoshaExtensionTools.loadExtensions', () => {
 
 	});
+	// 定位到指定地点
+	commands.registerCommand('extension.gotoPosition', async (uri: Uri, start: Position, end: Position) => {
+		try {
+			const document = await workspace.openTextDocument(uri);
+			const editor = await window.showTextDocument(document);
+			editor.revealRange(new Range(start, end), TextEditorRevealType.InCenter);
+			editor.selections = [new Selection(start, end)];
+		} catch (error) {
+			let e = error as Error;
+			LogHelper.log(l10n.t(' {errorName} {errorMessage}', { errorName: e.name, errorMessage: e.message }), 'error');
+		}
+	});
 
 	// NOTE 注册事件
 	// 文件监视器
-	let watcher = workspace.createFileSystemWatcher('**/*');
-	watcher.onDidChange(e => {
-		LogHelper.log(`File ${e.fsPath} has changed.`);
-	});
-	watcher.onDidCreate(e => {
-		LogHelper.log(`File ${e.fsPath} has created.`);
-	});
-	watcher.onDidDelete(e => {
-		LogHelper.log(`File ${e.fsPath} has deleted.`);
-	});
+	// let watcher = workspace.createFileSystemWatcher('**/*');
+	// watcher.onDidChange(e => {
+	// 	LogHelper.log(`File ${e.fsPath} has changed.`);
+	// });
+	// watcher.onDidCreate(e => {
+	// 	LogHelper.log(`File ${e.fsPath} has created.`);
+	// });
+	// watcher.onDidDelete(e => {
+	// 	LogHelper.log(`File ${e.fsPath} has deleted.`);
+	// });
 	// 文件内容更改
-	workspace.onDidChangeTextDocument(function (e) {
-		console.log('changed.');
-		// console.log(e.document.isDirty);
-	});
+	disposables.push(workspace.onDidChangeTextDocument(function (e) {
+		// if (!e.document.isDirty) {
+		// 	// 如果存在未保存的更改
+		// }
+		if (e.document.uri.scheme === 'file') {
+			LogHelper.log('file changed.');
+		}
+	}));
 	// 文件内容保存
 	workspace.onDidSaveTextDocument(function (e) {
-		console.log('saved.');
+		sanguoshaGeneralsProvider.refresh();
+		LogHelper.log('saved.');
 	});
 
 
@@ -221,9 +240,8 @@ export async function activate(context: ExtensionContext) {
 		const validTypes = ['qSanguosha', 'noname', 'freeKill'];
 		if (typeof type === 'string' && validTypes.includes(type)) {
 			SanguoshaHelper.load(rootUri, type as 'qSanguosha' | 'noname' | 'freeKill');
-
 		} else {
-			LogHelper.log(l10n.t('The Sanguosha extension type saved in the workspace configuration is invalid!'),'error');
+			LogHelper.log(l10n.t('The Sanguosha extension type saved in the workspace configuration is invalid!'), 'error');
 		}
 		// TODO 读取三国杀扩展
 	} else {
@@ -236,13 +254,13 @@ export async function activate(context: ExtensionContext) {
 		}
 	}
 
+	// NOTE 注册提供者
+	// window.registerTreeDataProvider('sanguoshaTasks', new SanguoshaSkillsProvider());
+
+	const sanguoshaPackagesProvider = new SanguoshaPackagesProvider(rootUri);
+	window.registerTreeDataProvider('sanguoshaPackages', sanguoshaPackagesProvider);
 
 	const sanguoshaGeneralsProvider = new SanguoshaGeneralsProvider(rootUri);
-	// NOTE 注册提供者
-	window.registerTreeDataProvider('sanguoshaTasks', new SanguoshaSkillsProvider());
-	// window.registerTreeDataProvider('sanguoshaPackages', new sgs.SanguoshaTasksProvider());
-
-
 	window.registerTreeDataProvider('sanguoshaGenerals', sanguoshaGeneralsProvider);
 
 	// 注册 CodeLens 提供者
@@ -256,7 +274,7 @@ export async function activate(context: ExtensionContext) {
 	}
 }
 
-// 当你的扩展被停用时调用这个方法
+// 当扩展被停用时调用这个方法
 export function deactivate() {
 	// 不知道这玩意和上面的 subscription 是不是一样的
 	// if (disposables) {

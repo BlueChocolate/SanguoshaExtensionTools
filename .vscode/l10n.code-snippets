@@ -17,7 +17,7 @@
 	// }
 	"Insert l10n localization function": {
 		"scope": "javascript,typescript",
-		"prefix": "lll",
+		"prefix": "l10",
 		"body": [
 			"l10n.t('$1')"
 		],
@@ -26,7 +26,7 @@
 
 	"Insert trycatch with error type conversion": {
 		"scope": "javascript,typescript",
-		"prefix": "le",
+		"prefix": "err",
 		"body": [
 			"let e = error as Error;",
 			"LogHelper.log(l10n.t('$1 {errorName} {errorMessage}', { errorName: e.name, errorMessage: e.message }), 'error');",

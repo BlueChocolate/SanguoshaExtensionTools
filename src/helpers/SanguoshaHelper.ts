@@ -14,9 +14,7 @@ export class SanguoshaHelper extends BaseHelper {
 
     public static load(rootUri: Uri, type: 'qSanguosha' | 'noname' | 'freeKill') {
         SanguoshaHelper.sanguosha = new Sanguosha();
-        SanguoshaHelper.sanguosha.sanguoshaType = type;
-
-
+        SanguoshaHelper.sanguosha.type = type;
     }
 
     /* NOTE 太阳神三国杀扩展目录结构

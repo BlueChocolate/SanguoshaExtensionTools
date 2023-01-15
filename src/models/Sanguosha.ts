@@ -1,13 +1,14 @@
 import { LuaAstHelper } from "../helpers/LuaAstHelper";
-import { Package, PcakageType } from "./Package";
+import { Package } from "./Package";
 import { General } from "./General";
 import { l10n } from "vscode";
+import { Ai } from "./Ai";
 
 export class Sanguosha {
 
-  public sanguoshaType: 'qSanguosha' | 'noname' | 'freeKill' = 'qSanguosha';
-  public packages: Package[] = new Array<Package>();
-  public ai:Ai[]=[];
+  public type: 'qSanguosha' | 'noname' | 'freeKill' = 'qSanguosha';
+  public packages: Package[] = [];
+  public ai: Ai[] = [];
   public translations: { key: string; value: string; }[] = [];
 
   public getTranslation(key: string) {
@@ -54,6 +55,7 @@ export class Sanguosha {
           case 'LocalStatement':
           case 'AssignmentStatement':
 
+            // NOTE 读取扩展包赋值语句
             // Dominion=sgs.Package("dominion")
             const packageInfo = tryReadPackage(ast);
             if (packageInfo) {
@@ -63,6 +65,7 @@ export class Sanguosha {
               }
             }
 
+            // NOTE 读取武将赋值语句
             // Rem=sgs.General(Dominion,"Rem","magic",3,false)
             const generalInfo = tryReadGeneral(ast);
             if (generalInfo) {
@@ -151,6 +154,8 @@ export class Sanguosha {
             this.readExtensionInfo(ast['arguments']);
             break;
           case 'TableCallExpression':
+
+            // NOTE 读取翻译表调用语句
             let translationInfo = tryReadTranslation(ast);
             if (translationInfo) {
               this.translations = [...this.translations, ...translationInfo.translations];
@@ -180,7 +185,6 @@ export class Sanguosha {
 
     function tryReadPackage(ast: any) {
       let pack = new Package();
-      let type: string = "Package_GeneralPack";
 
       let isReadSuccess: boolean = false;
       try {
@@ -209,13 +213,13 @@ export class Sanguosha {
                       if (arg2) {
                         switch (arg2.name) {
                           case 'Package_GeneralPack':
-                            pack.type = PcakageType.generalPack;
+                            pack.type = 'generalPack';
                             break;
                           case 'Package_CardPack':
-                            pack.type = PcakageType.cardPack;
+                            pack.type = 'cardPack';
                             break;
                           case 'Package_SpecialPack':
-                            pack.type = PcakageType.specialPack;
+                            pack.type = 'specialPack';
                             break;
                           default:
                             break;
@@ -226,7 +230,7 @@ export class Sanguosha {
                       // 判断参数1是不是字符串 "dominion"
                       let arg1 = LuaAstHelper.readStringLiteral(args[1 - 1]);
                       if (arg1) {
-                        pack.trsName = arg1.raw;
+                        pack.trsName = arg1.raw.slice(1, -1); // 去除引号
                       } else { break; }
                       isReadSuccess = true;
                       break;
@@ -269,6 +273,8 @@ export class Sanguosha {
             if (sgsFunction) {
               // ！判断函数名是否为 sgs.General
               if (sgsFunction.name === 'General') {
+                // 赋值语句的位置
+                general.loc=assignment.loc;
 
                 // 尝试读取这个赋值语句的变量名 realsubaru
                 let identifier = LuaAstHelper.readIdentifier(assignation.to);
@@ -301,8 +307,8 @@ export class Sanguosha {
                       let arg1 = LuaAstHelper.readIdentifier(args[1 - 1]);
                       if (arg4 && arg3 && arg2 && arg1) {
                         general.hp = arg4.raw;
-                        general.kingdom = arg3.raw;
-                        general.trsName = arg2.raw;
+                        general.kingdom = arg3.raw.slice(1, -1); // 去除引号
+                        general.trsName = arg2.raw.slice(1, -1); // 去除引号
                         general.packageVarName = arg1.name;
                       } else { break; }
                       isReadSuccess = true;
@@ -347,7 +353,7 @@ export class Sanguosha {
                 let key = LuaAstHelper.readStringLiteral(tableKey.key);
                 let value = LuaAstHelper.readStringLiteral(tableKey.value);
                 if (key && value) {
-                  translations.push({ key: key.raw, value: value.raw });
+                  translations.push({ key: key.raw.slice(1, -1), value: value.raw.slice(1, -1) }); // 去除引号
                 }
               }
             }

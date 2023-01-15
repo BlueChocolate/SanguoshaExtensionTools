@@ -1,6 +1,5 @@
-import { FileType, Uri, workspace } from 'vscode';
-import { BaseHelper } from './BaseHelper';
-import { LogHelper } from './LogHelper';
+import { Uri, FileType, workspace } from "vscode";
+import { BaseHelper } from "./BaseHelper";
 
 
 export class FileSystemHelper extends BaseHelper {

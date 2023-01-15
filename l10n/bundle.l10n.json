@@ -8,5 +8,13 @@
   "Please select the type of Sanguosha extension": "Please select the type of Sanguosha extension",
   "Please enter a identification name for the package": "Please enter a identification name for the package",
   "The extension package identification name can only consist of numbers, letters or underscores, and cannot start with a number!": "The extension package identification name can only consist of numbers, letters or underscores, and cannot start with a number!",
-  "This feature is not yet implemented": "This feature is not yet implemented"
+  "This feature is not yet implemented": "This feature is not yet implemented",
+  "The Sanguosha extension type saved in the workspace configuration is invalid!": "The Sanguosha extension type saved in the workspace configuration is invalid!",
+  "Failed to detect the Sanguosha extension type {errorName} {errorMessage}": "Failed to detect the Sanguosha extension type {errorName} {errorMessage}",
+  "Function not implemented.": "Function not implemented.",
+  "No general in empty workspace": "No general in empty workspace",
+  "HP:{hp}|Sex:{sex}|Country:{kingdom}": "HP:{hp}|Sex:{sex}|Country:{kingdom}",
+  "Male": "Male",
+  "Female": "Female",
+  "Unable to read the Sanguosha extensions": "Unable to read the Sanguosha extensions"
 }

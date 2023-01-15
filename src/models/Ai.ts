@@ -1,4 +1,4 @@
 
-class Ai{
+export class Ai{
     
 }
