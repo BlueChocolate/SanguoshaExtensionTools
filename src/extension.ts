@@ -4,7 +4,7 @@ import { SanguoshaCodelensProvider } from './providers/SanguoshaCodelensProvider
 import { LuaAstHelper } from "./helpers/LuaAstHelper";
 import { LogHelper } from "./helpers/LogHelper";
 import { QsgsHelper } from "./helpers/QsgsHelper";
-import { Disposable, ExtensionContext, Uri, l10n, workspace, window, languages, commands, ConfigurationTarget, StatusBarAlignment, Position, Range, TextEditorRevealType, Selection } from 'vscode';
+import { Disposable, ExtensionContext, Uri, l10n, workspace, window, languages, commands, ConfigurationTarget, StatusBarAlignment, Position, Range, TextEditorRevealType, Selection, extensions } from 'vscode';
 import { FileSystemHelper } from './helpers/FileSystemHelper';
 import { SanguoshaHelper } from './helpers/SanguoshaHelper';
 import { SanguoshaSkillsProvider } from './providers/SanguoshaTasksProvider';
@@ -14,7 +14,8 @@ let disposables: Disposable[] = [];
 
 // 当你的扩展被激活时调用这个方法，只执行一次
 export async function activate(context: ExtensionContext) {
-
+	console.log(extensions.getExtension('undefined_publisher.sanguosha-extension-tools')?.extensionUri);
+	
 	// 输出日志信息
 	LogHelper.log(l10n.t('Sanguosha Extension Tools is now active!'));
 

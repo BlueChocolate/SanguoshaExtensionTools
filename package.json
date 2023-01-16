@@ -214,5 +214,8 @@
   "dependencies": {
     "@types/luaparse": "^0.2.8",
     "luaparse": "^0.3.1"
-  }
+  },
+  "extensionDependencies": [
+    "sumneko.lua"
+  ]
 }
