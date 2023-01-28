@@ -31,8 +31,8 @@ class SanguoshaSkill extends vscode.TreeItem {
     this.description = tip;
   }
   iconPath = {
-    light: path.join(__filename, '..', '..', 'resources', 'light', 'task.svg'),
-    dark: path.join(__filename, '..', '..', 'resources', 'dark', 'task.svg')
+    light: path.join(__filename, '..', '..', 'resources', 'icons', 'light', 'task.svg'),
+    dark: path.join(__filename, '..', '..', 'resources', 'icons', 'dark', 'task.svg')
   };
   contextValue = 'sanguoshaTask';
 }

@@ -1,71 +1,68 @@
-# sanguosha-extension-tools README
 # 三国杀扩展包工具
-This is the README for your extension "sanguosha-extension-tools". After writing up a brief description, we recommend including the following sections.
+这是您的扩展“sanguosha-extension-tools”的自述文件。 在写完简短描述后，我们建议包括以下部分。
 
-## Features
+## 功能
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+描述您的扩展程序的具体功能，包括您的扩展程序的屏幕截图。 图像路径是相对于此 README 文件的。
 
-For example if there is an image subfolder under your extension project workspace:
+例如，如果您的扩展项目工作区下有一个图像子文件夹：
+ 
+\!\[feature X\]\(resources/images/game.svg\)
 
-\!\[feature X\]\(images/feature-x.png\)
+> 提示：许多流行的扩展都使用动画。 这是炫耀您的扩展程序的绝佳方式！ 我们推荐简短、重点突出且易于理解的动画。
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+## 依赖项
 
-## Requirements
+如果您有任何要求或依赖项，请添加一个部分来描述这些要求以及如何安装和配置它们。
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+## 插件设置
 
-## Extension Settings
+如果您的扩展通过 `contributes.configuration` 扩展点添加任何 VS 代码设置，则包括在内。
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+例如：
 
-For example:
+此扩展提供以下设置：
 
-This extension contributes the following settings:
+* `myExtension.enable`：启用/禁用此扩展。
+* `myExtension.thing`：设置为 `blah` 来做某事。
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+## 已知的问题
 
-## Known Issues
+调出已知问题有助于限制用户针对您的扩展打开重复问题。
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+## 发行说明
 
-## Release Notes
-
-Users appreciate release notes as you update your extension.
+用户在更新扩展时会欣赏到发行说明。
 
 ### 1.0.0
 
-Initial release of ...
+初始发布。
 
 ### 1.0.1
 
-Fixed issue #.
+修复 issue #.
 
 ### 1.1.0
 
-Added features X, Y, and Z.
+添加功能 X, Y, 和 Z.
 
 ---
 
-## Following extension guidelines
+## 遵循扩展指南
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
+确保您已通读扩展指南并遵循创建扩展的最佳实践。
 
 * [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
 
-## Working with Markdown
+## 使用 Markdown
 
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
+您可以使用 Visual Studio Code 编写 README。 以下是一些有用的编辑器键盘快捷键：
 
 * Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
 * Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
 * Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
 
-## For more information
+## 更多信息
 
 * [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
 * [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**

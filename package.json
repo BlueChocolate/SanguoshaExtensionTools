@@ -32,7 +32,7 @@
         {
           "id": "sanguosha",
           "title": "Sanguosha Extension Tools",
-          "icon": "resources/sanguosha.svg"
+          "icon": "resources/icons/sanguosha.svg"
         }
       ]
     },
@@ -41,32 +41,32 @@
         {
           "id": "sanguoshaTasks",
           "name": "Tasks",
-          "icon": "resources/sanguosha.svg",
+          "icon": "resources/icons/sanguosha.svg",
           "contextualTitle": "Sanguosha Tasks",
           "visibility": "hidden"
         },
         {
           "id": "sanguoshaPackages",
           "name": "%packages%",
-          "icon": "resources/game.svg",
+          "icon": "resources/icons/game.svg",
           "contextualTitle": "Sanguosha Packages"
         },
         {
           "id": "sanguoshaGenerals",
           "name": "%generals%",
-          "icon": "resources/game.svg",
+          "icon": "resources/icons/game.svg",
           "contextualTitle": "Sanguosha Generals"
         },
         {
           "id": "sanguoshaSkills",
           "name": "%skill%",
-          "icon": "resources/game.svg",
+          "icon": "resources/icons/game.svg",
           "contextualTitle": "Sanguosha Skill"
         },
         {
           "id": "sanguoshaAi",
           "name": "%ai%",
-          "icon": "resources/game.svg",
+          "icon": "resources/icons/game.svg",
           "contextualTitle": "Sanguosha AI"
         }
       ]
@@ -131,8 +131,8 @@
         "command": "sanguoshaExtensionTools.refreshExtension",
         "title": "Refresh Sanguosha Extension",
         "icon": {
-          "light": "resources/light/refresh.svg",
-          "dark": "resources/dark/refresh.svg"
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
         }
       },
       {
@@ -143,24 +143,24 @@
         "command": "sanguoshaExtensionTools.addGeneral",
         "title": "Add Sanguosha General",
         "icon": {
-          "light": "resources/light/add.svg",
-          "dark": "resources/dark/add.svg"
+          "light": "resources/icons/light/add.svg",
+          "dark": "resources/icons/dark/add.svg"
         }
       },
       {
         "command": "sanguoshaExtensionTools.editGeneral",
         "title": "Edit Sanguosha General",
         "icon": {
-          "light": "resources/light/edit.svg",
-          "dark": "resources/dark/edit.svg"
+          "light": "resources/icons/light/edit.svg",
+          "dark": "resources/icons/dark/edit.svg"
         }
       },
       {
         "command": "sanguoshaExtensionTools.startTask",
         "title": "Start task.",
         "icon": {
-          "light": "resources/light/play.svg",
-          "dark": "resources/dark/play.svg"
+          "light": "resources/icons/light/play.svg",
+          "dark": "resources/icons/dark/play.svg"
         }
       }
     ],

@@ -73,7 +73,7 @@ class GeneralTreeItem extends TreeItem {
     }
 
     iconPath = {
-        light: Uri.joinPath(Uri.file(__dirname), '..', '..', 'resources', 'light', 'dependency.svg'),
-        dark: Uri.joinPath(Uri.file(__dirname), '..', '..', 'resources', 'dark', 'dependency.svg')
+        light: Uri.joinPath(Uri.file(__dirname), '..', '..', 'resources', 'icons', 'light', 'dependency.svg'),
+        dark: Uri.joinPath(Uri.file(__dirname), '..', '..', 'resources', 'icons', 'dark', 'dependency.svg')
     };
 }
