@@ -1,10 +1,10 @@
 import { LuaAstHelper } from "../helpers/LuaAstHelper";
 import { Package } from "./Package";
 import { General } from "./General";
-import { l10n } from "vscode";
+import { ConfigurationTarget, FileType, l10n, Uri, window, workspace } from "vscode";
 import { Ai } from "./Ai";
 
-export class Sanguosha {
+export abstract class Sanguosha {
 
   public type: 'qSanguosha' | 'noname' | 'freeKill' = 'qSanguosha';
   public packages: Package[] = [];
@@ -274,7 +274,7 @@ export class Sanguosha {
               // ！判断函数名是否为 sgs.General
               if (sgsFunction.name === 'General') {
                 // 赋值语句的位置
-                general.loc=assignment.loc;
+                general.loc = assignment.loc;
 
                 // 尝试读取这个赋值语句的变量名 realsubaru
                 let identifier = LuaAstHelper.readIdentifier(assignation.to);
@@ -386,7 +386,27 @@ export class Sanguosha {
     throw new Error(l10n.t('Function not implemented.'));
   }
 
-  readFreeKillRaw() {
-    throw new Error(l10n.t('Function not implemented.'));
+  abstract readRaw(): void;
+  abstract load(): void;
+
+  static getGeneralAvatarByName() {
+  }
+
+  static getGeneralCardByName() {
+  }
+
+  static getAvatarByName() {
+  }
+
+  
+
+}
+
+export class QSanguosha extends Sanguosha {
+  load(): void {
+    throw new Error("Method not implemented.");
+  }
+  readRaw(): void {
+    throw new Error(l10n.t('Method not implemented.'));
   }
 }

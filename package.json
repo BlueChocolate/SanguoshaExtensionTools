@@ -39,13 +39,6 @@
     "views": {
       "sanguosha": [
         {
-          "id": "sanguoshaTasks",
-          "name": "Tasks",
-          "icon": "resources/icons/sanguosha.svg",
-          "contextualTitle": "Sanguosha Tasks",
-          "visibility": "hidden"
-        },
-        {
           "id": "sanguoshaPackages",
           "name": "%packages%",
           "icon": "resources/icons/game.svg",

@@ -1,21 +1,13 @@
-import * as path from 'path';
-import { ConfigurationTarget, FileType, l10n, Uri, window, workspace } from 'vscode';
+import path = require("path");
+import { Uri, FileType, workspace, l10n, window, ConfigurationTarget } from "vscode";
+import { Sanguosha } from "../models/Sanguosha";
 import { LogHelper } from "./LogHelper";
-import { FileSystemHelper } from "./FileSystemHelper";
-import { BaseHelper } from './BaseHelper';
-import { Sanguosha } from '../models/Sanguosha';
 
+export class SanguoshaHelper {
 
-export class SanguoshaHelper extends BaseHelper {
+    protected constructor() { }
 
     public static sanguosha: Sanguosha;
-    public static rootUri: Uri;
-
-
-    public static load(rootUri: Uri, type: 'qSanguosha' | 'noname' | 'freeKill') {
-        SanguoshaHelper.sanguosha = new Sanguosha();
-        SanguoshaHelper.sanguosha.type = type;
-    }
 
     /* NOTE 太阳神三国杀扩展目录结构
     ├─audio
@@ -36,12 +28,33 @@ export class SanguoshaHelper extends BaseHelper {
     │  └─mark(*.png)
     └─lua
         └─ai(*.lua)
-*/
+    */
     public static async detachSanguoshaType(rootUri: Uri): Promise<'qSanguosha' | 'noname' | 'freeKill' | undefined> {
+
+        async function uriExists(uri: Uri, type?: FileType): Promise<boolean> {
+            try {
+                let stat = await workspace.fs.stat(uri);
+                if (type) {
+                    if (stat.type === type) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return true;
+                }
+            } catch (error) {
+                if ((error as Error).name === 'EntryNotFound (FileSystemError)') {
+                    return false;
+                } else {
+                    throw error;
+                }
+            }
+        }
 
         try {
             // 判断是否存在 .\extensions 目录
-            if (await FileSystemHelper.uriExists(Uri.joinPath(rootUri, 'extensions'), FileType.Directory)) {
+            if (await uriExists(Uri.joinPath(rootUri, 'extensions'), FileType.Directory)) {
 
                 // 判断 .\extensions 文件夹是否存在 *.lua 文件
                 const extensionsTuples = await workspace.fs.readDirectory(Uri.joinPath(rootUri, 'extensions'));
@@ -52,7 +65,7 @@ export class SanguoshaHelper extends BaseHelper {
                 } else {
 
                     // 判断是否存在 .\lua\ai 目录
-                    if (await FileSystemHelper.uriExists(Uri.joinPath(rootUri, 'lua', 'ai'), FileType.Directory)) {
+                    if (await uriExists(Uri.joinPath(rootUri, 'lua', 'ai'), FileType.Directory)) {
 
                         // 判断 .\extensions 文件夹是否存在 *.lua 文件
                         const extensionsTuples = await workspace.fs.readDirectory(Uri.joinPath(rootUri, 'lua', 'ai'));
@@ -70,7 +83,7 @@ export class SanguoshaHelper extends BaseHelper {
             } else {
                 // REVIEW 考虑一下文件扩展名大小写的问题
                 // 判断是根目录否存在 extension.js 文件
-                if (await FileSystemHelper.uriExists(Uri.joinPath(rootUri, 'extension.js'), FileType.File)) {
+                if (await uriExists(Uri.joinPath(rootUri, 'extension.js'), FileType.File)) {
                     return 'noname';
                 } else {
                     return undefined;
@@ -83,7 +96,31 @@ export class SanguoshaHelper extends BaseHelper {
         }
     }
 
-    public static async showSanguoshaTypeQuickPicker() {
+    public static async createNewExtension(uri: Uri, trsName: string) {
+
+        if (uri) {
+            await workspace.fs.createDirectory(Uri.joinPath(uri, 'extensions'));
+            await workspace.fs.createDirectory(Uri.joinPath(uri, 'lua', 'ai'));
+            await workspace.fs.createDirectory(Uri.joinPath(uri, 'audio', 'bgm'));
+            await workspace.fs.createDirectory(Uri.joinPath(uri, 'audio', 'death'));
+            await workspace.fs.createDirectory(Uri.joinPath(uri, 'audio', 'skill'));
+            await workspace.fs.createDirectory(Uri.joinPath(uri, 'image', 'mark'));
+            await workspace.fs.createDirectory(Uri.joinPath(uri, 'image', 'animate'));
+            await workspace.fs.createDirectory(Uri.joinPath(uri, 'image', 'generals', 'card'));
+            await workspace.fs.createDirectory(Uri.joinPath(uri, 'image', 'generals', 'avatar'));
+            await workspace.fs.createDirectory(Uri.joinPath(uri, 'image', 'fullskin', 'generals', 'full'));
+
+            let varName = trsName.length > 1 ? (trsName.slice(0, 1).toUpperCase() + trsName.slice(1).toLowerCase()) : trsName.toUpperCase();
+            const writeStr = varName + ' = sgs.Package("' + trsName + '")\n\nreturn ' + varName;
+            const writeData = Buffer.from(writeStr, 'utf-8');
+
+            await workspace.fs.writeFile(Uri.joinPath(uri, 'extensions', trsName + '.lua'), writeData);
+            await workspace.fs.writeFile(Uri.joinPath(uri, 'lua', 'ai', trsName + '-ai.lua'), new Uint8Array());
+        }
+    }
+
+
+    public static async showSanguoshaTypeQuickPicker(): Promise<void> {
         // 弹出快速选择
         const select = await window.showQuickPick(
             [

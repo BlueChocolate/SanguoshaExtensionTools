@@ -1,8 +1,10 @@
 import * as lua from 'luaparse';
-import { BaseHelper } from './BaseHelper';
 
 
-export class LuaAstHelper extends BaseHelper {
+export class LuaAstHelper {
+    
+    protected constructor() { }
+
     /**
      * 解析 Lua 源代码（版本 5.2），返回抽象语法树（AST）
      * @param luaRaw Lua源代码字符串
@@ -263,6 +265,7 @@ export class LuaAstHelper extends BaseHelper {
         return '';
     }
 
+    //TODO - 把 any 更换为明确的类型
     // 获取成对的赋值语句，因为lua可以这样写：a,b=123,"success"
     static readAssignmentStatement(ast: any) {
         let assignations = [];

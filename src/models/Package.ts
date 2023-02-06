@@ -9,3 +9,11 @@ export class Package {
   public generals: General[] = [];
   public cards: Card[] = [];
 }
+
+export class GeneralPack extends Package{
+  public generals: General[] = [];
+}
+
+export class CardPack extends Package{
+  public cards: Card[] = [];
+}

@@ -1,16 +1,10 @@
 import path = require('path');
 import { Event, EventEmitter, FileChangeType, l10n, TreeDataProvider, TreeItem, TreeItemCollapsibleState, Uri, window } from 'vscode';
-import { FileSystemHelper } from '../helpers/FileSystemHelper';
-import { LogHelper } from '../helpers/LogHelper';
 import { SanguoshaHelper } from '../helpers/SanguoshaHelper';
-import { General } from '../models/General';
-import { Package } from '../models/Package';
-import { Sanguosha } from '../models/Sanguosha';
 
 export class SanguoshaGeneralsProvider implements TreeDataProvider<GeneralTreeItem> {
     private _onDidChangeTreeData: EventEmitter<GeneralTreeItem | undefined | null | void> = new EventEmitter<GeneralTreeItem | undefined | null | void>();
     readonly onDidChangeTreeData: Event<GeneralTreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
-    private sanguosha?: Sanguosha;
     private rootUri: Uri;
 
     constructor(rootUri: Uri) {
@@ -38,9 +32,10 @@ export class SanguoshaGeneralsProvider implements TreeDataProvider<GeneralTreeIt
             return Promise.resolve([]);
         } else {
             // 无参数执行，根节点
-            if (this.sanguosha) {
+            const sanguosha=SanguoshaHelper.sanguosha;
+            if (sanguosha) {
                 let generals: GeneralTreeItem[] = [];
-                for (const pack of this.sanguosha.packages) {
+                for (const pack of sanguosha.packages) {
                     for (const general of pack.generals) {
                         generals.push(new GeneralTreeItem(general.trsName,
                             l10n.t('HP:{hp}|Sex:{sex}|Kingdom:{kingdom}', {

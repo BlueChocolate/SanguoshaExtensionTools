@@ -1,8 +1,8 @@
 import { window } from 'vscode';
-import { BaseHelper } from './BaseHelper';
 
+export class LogHelper{
 
-export class LogHelper extends BaseHelper {
+    protected constructor() { }
 
     // 创建输出频道
     // public static channel = vscode.window.createOutputChannel('SanguoshaExtensionTools', 'log');
