@@ -5,14 +5,13 @@ import { LuaAstHelper } from "./helpers/LuaAstHelper";
 import { LogHelper } from "./helpers/LogHelper";
 import { Disposable, ExtensionContext, Uri, l10n, workspace, window, languages, commands, ConfigurationTarget, StatusBarAlignment, Position, Range, TextEditorRevealType, Selection, extensions } from 'vscode';
 import { SanguoshaHelper } from './helpers/SanguoshaHelper';
+import { FreeKill, Noname, SunGod } from './models/Sanguosha';
 
 // 一次性对象列表
 let disposables: Disposable[] = [];
 
 // 当你的扩展被激活时调用这个方法，只执行一次
 export async function activate(context: ExtensionContext) {
-	console.log(extensions.getExtension('undefined_publisher.sanguosha-extension-tools')?.extensionUri);
-
 	// 输出日志信息
 	LogHelper.log(l10n.t('Sanguosha Extension Tools is now active!'));
 
@@ -64,7 +63,6 @@ export async function activate(context: ExtensionContext) {
 	commands.registerCommand("sanguoshaExtensionTools.disableCodeLens", () => {
 		workspace.getConfiguration("sanguoshaExtensionTools").update("enableCodeLens", false, true);
 	});
-	
 	// 刷新三国杀扩展
 	commands.registerCommand('sanguoshaExtensionTools.refreshExtension', () => {
 		sanguoshaGeneralsProvider.refresh();
@@ -232,22 +230,44 @@ export async function activate(context: ExtensionContext) {
 	// 使用了选链运算符，因此 inspect() 返回 undefined 也不会抛出异常
 	let type = workspace.getConfiguration().inspect('sanguoshaExtensionTools.extension.type')?.workspaceValue;
 	if (type) {
-		const validTypes = ['qSanguosha', 'noname', 'freeKill'];
-		if (typeof type === 'string' && validTypes.includes(type)) {
-			// SanguoshaHelper.load(rootUri, type as 'qSanguosha' | 'noname' | 'freeKill');
-		} else {
-			LogHelper.log(l10n.t('The Sanguosha extension type saved in the workspace configuration is invalid!'), 'error');
+		switch (type) {
+			case 'qSanguosha':
+				SanguoshaHelper.sanguosha = new SunGod();
+				LogHelper.log(l10n.t('The Sanguosha extension type saved in the workspace configuration is QSanguosha!'), 'info');
+				break;
+			case 'noname':
+				SanguoshaHelper.sanguosha = new Noname();
+				LogHelper.log(l10n.t('The Sanguosha extension type saved in the workspace configuration is Noname!'), 'info');
+				break;
+			case 'freeKill':
+				SanguoshaHelper.sanguosha = new FreeKill();
+				LogHelper.log(l10n.t('The Sanguosha extension type saved in the workspace configuration is Freekill!'), 'info');
+				break;
+			default:
+				SanguoshaHelper.sanguosha = undefined;
+				LogHelper.log(l10n.t('The Sanguosha extension type saved in the workspace configuration is invalid!'), 'error');
+				break;
 		}
-		// TODO 读取三国杀扩展
-	} else {
-		let type = await SanguoshaHelper.detachSanguoshaType(rootUri);
+	}
+
+	// 判断是否正确读取了
+	if (SanguoshaHelper.sanguosha) {
+		
+	}else{
+		type = await SanguoshaHelper.detachSanguoshaType(rootUri);
 		if (type) {
 
-
+			
 		} else {
+
+			LogHelper.log(l10n.t('Detach Sanguosha type Failed!'), 'error');
 
 		}
 	}
+	
+
+	
+
 
 	// NOTE 树形视图相关
 

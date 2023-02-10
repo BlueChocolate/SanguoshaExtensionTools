@@ -1,5 +1,5 @@
 import path = require("path");
-import { Uri, FileType, workspace, l10n, window, ConfigurationTarget } from "vscode";
+import { Uri, FileType, workspace, l10n, window, ConfigurationTarget, extensions } from "vscode";
 import { Sanguosha } from "../models/Sanguosha";
 import { LogHelper } from "./LogHelper";
 
@@ -7,7 +7,7 @@ export class SanguoshaHelper {
 
     protected constructor() { }
 
-    public static sanguosha: Sanguosha;
+    public static sanguosha: Sanguosha | undefined = undefined;
 
     /* NOTE 太阳神三国杀扩展目录结构
     ├─audio
@@ -119,7 +119,6 @@ export class SanguoshaHelper {
         }
     }
 
-
     public static async showSanguoshaTypeQuickPicker(): Promise<void> {
         // 弹出快速选择
         const select = await window.showQuickPick(
@@ -136,6 +135,38 @@ export class SanguoshaHelper {
         } else {
             // 其实这个会自动识别是工作区还是文件夹
             await workspace.getConfiguration().update('sanguoshaExtensionTools.extension.type', 'qSanguosha', ConfigurationTarget.Workspace);
+        }
+    }
+
+
+    public static setExternalLibrary(folder: string, enable: boolean) {
+        const extensionId = 'undefined_publisher.sanguosha-extension-tools'; // this id is case sensitive
+        const extensionPath = extensions.getExtension(extensionId)?.extensionPath;
+        const folderPath = extensionPath + "\\" + folder;
+        const config = workspace.getConfiguration("Lua");
+        const library: string[] | undefined = config.get("workspace.library");
+        if (library && extensionPath) {
+            // 删除路径的任何旧版本，例如 publisher.name-0.0.1
+            for (let i = library.length - 1; i >= 0; i--) {
+                const el = library[i];
+                const isSelfExtension = el.indexOf(extensionId) > -1;
+                const isCurrentVersion = el.indexOf(extensionPath) > -1;
+                if (isSelfExtension && !isCurrentVersion) {
+                    library.splice(i, 1);
+                }
+            }
+            const index = library.indexOf(folderPath);
+            if (enable) {
+                if (index === -1) {
+                    library.push(folderPath);
+                }
+            }
+            else {
+                if (index > -1) {
+                    library.splice(index, 1);
+                }
+            }
+            config.update("workspace.library", library, true);
         }
     }
 }

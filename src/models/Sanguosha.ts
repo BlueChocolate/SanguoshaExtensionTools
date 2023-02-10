@@ -386,8 +386,8 @@ export abstract class Sanguosha {
     throw new Error(l10n.t('Function not implemented.'));
   }
 
-  abstract readRaw(): void;
-  abstract load(): void;
+  public abstract readRaw(): void;
+  public abstract load(): void;
 
   static getGeneralAvatarByName() {
   }
@@ -402,11 +402,33 @@ export abstract class Sanguosha {
 
 }
 
-export class QSanguosha extends Sanguosha {
-  load(): void {
+export class SunGod extends Sanguosha {
+
+  public load(): void {
     throw new Error("Method not implemented.");
   }
-  readRaw(): void {
+  public readRaw(): void {
     throw new Error(l10n.t('Method not implemented.'));
   }
+}
+
+export class Noname extends Sanguosha{
+  public readRaw(): void {
+    throw new Error("Method not implemented.");
+  }
+  public load(): void {
+    throw new Error("Method not implemented.");
+  }
+
+}
+
+export class FreeKill extends Sanguosha{
+  public readRaw(): void {
+    throw new Error("Method not implemented.");
+  }
+  public load(): void {
+    throw new Error("Method not implemented.");
+  }
+
+
 }

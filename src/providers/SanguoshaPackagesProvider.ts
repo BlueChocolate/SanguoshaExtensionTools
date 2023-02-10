@@ -3,13 +3,13 @@ import { SanguoshaHelper } from "../helpers/SanguoshaHelper";
 import { Card } from "../models/Card";
 import { General } from "../models/General";
 import { Package } from "../models/Package";
-import { QSanguosha } from "../models/Sanguosha";
+import { SunGod } from "../models/Sanguosha";
 
 export class SanguoshaPackagesProvider implements TreeDataProvider<any> {
     private _onDidChangeTreeData: EventEmitter<any | undefined | null | void> = new EventEmitter<any | undefined | null | void>();
     readonly onDidChangeTreeData: Event<any | undefined | null | void> = this._onDidChangeTreeData.event;
 
-    private sanguosha: QSanguosha = new QSanguosha();
+    private sanguosha: SunGod = new SunGod();
     private rootUri: Uri;
 
     constructor(rootUri: Uri) {

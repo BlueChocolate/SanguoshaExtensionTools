@@ -10,7 +10,7 @@
     "Other",
     "Programming Languages"
   ],
-  "icon": "",
+  "icon": "logo.png",
   "activationEvents": [
     "onView:sanguosha"
   ],
