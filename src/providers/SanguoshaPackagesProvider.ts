@@ -1,5 +1,4 @@
-import { TreeDataProvider, EventEmitter, Event, Uri, TreeItem, window, l10n, TreeItemCollapsibleState, Command, commands, Position } from "vscode";
-import { SanguoshaHelper } from "../helpers/SanguoshaHelper";
+import { TreeDataProvider, EventEmitter, Event, Uri, TreeItem, window, l10n, TreeItemCollapsibleState, Command, Position } from "vscode";
 import { Card } from "../models/Card";
 import { General } from "../models/General";
 import { Package } from "../models/Package";

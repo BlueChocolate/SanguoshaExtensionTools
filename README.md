@@ -1,9 +1,27 @@
 # 三国杀扩展包工具
-这是您的扩展“sanguosha-extension-tools”的自述文件。 在写完简短描述后，我们建议包括以下部分。
 
-## 功能
+三国杀扩展包工具是一个 VS Code 插件，可以对各类开源三国杀的扩展包（例如太阳神三国杀、无名杀等）的开发提供便捷的智能感知、图形化操作与快捷操作等支持。
 
-描述您的扩展程序的具体功能，包括您的扩展程序的屏幕截图。 图像路径是相对于此 README 文件的。
+[简体中文](https://github.com/BlueChocolate/SanguoshaExtensionTools/blob/main/README.md)
+
+[English](https://github.com/BlueChocolate/SanguoshaExtensionTools/blob/main/README.en.md)
+
+## 特性
+
+该扩展提供对三国杀扩展包开发的基本语言支持：
+
+* 读取已有的三国杀扩展包
+
+图片 路径是相对于此 README 文件的
+
+* 快速创建三国杀扩展包
+* 快速定位到代码
+* 对三国杀 API 提供智能感知
+* 提供 CodeLens
+* 可视化编辑武将属性
+* 武将卡面生成器
+* 快速添加武将与技能
+* 快速导出扩展包
 
 例如，如果您的扩展项目工作区下有一个图像子文件夹：
  
