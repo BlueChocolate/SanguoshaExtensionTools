@@ -2,25 +2,23 @@ import { TreeDataProvider, EventEmitter, Event, Uri, TreeItem, window, l10n, Tre
 import { Card } from "../models/Card";
 import { General } from "../models/General";
 import { Package } from "../models/Package";
-import { SunGod } from "../models/Sanguosha";
+import { Sanguosha } from "../models/Sanguosha";
 
 export class SanguoshaPackagesProvider implements TreeDataProvider<any> {
     private _onDidChangeTreeData: EventEmitter<any | undefined | null | void> = new EventEmitter<any | undefined | null | void>();
     readonly onDidChangeTreeData: Event<any | undefined | null | void> = this._onDidChangeTreeData.event;
 
-    private sanguosha: SunGod = new SunGod();
     private rootUri: Uri;
 
     constructor(rootUri: Uri) {
         this.rootUri = rootUri;
 
-        const editor = window.activeTextEditor;
-        if (editor) {
-            let document = editor.document;
-            const documentText = document.getText();
-            this.sanguosha.readQsgsRaw(documentText);
-        }
-
+        // const editor = window.activeTextEditor;
+        // if (editor) {
+        //     let document = editor.document;
+        //     const documentText = document.getText();
+        //     sanguosha.readRaw(documentText);
+        // }
     }
 
     // 用于刷新
@@ -29,14 +27,17 @@ export class SanguoshaPackagesProvider implements TreeDataProvider<any> {
     }
 
     getTreeItem(element: any): TreeItem {
+        const sanguosha = Sanguosha.sanguosha;
         if (element instanceof Package) {
-            let item = new TreeItem(this.sanguosha.getTranslation(element.trsName), TreeItemCollapsibleState.Expanded);
+            // 扩展包节点
+            let item = new TreeItem(sanguosha.getTranslation(element.trsName), TreeItemCollapsibleState.Expanded);
             item.description = element.type;
             return item;
 
         } else if (element instanceof General) {
-            let item = new TreeItem(this.sanguosha.getTranslation(element.trsName), TreeItemCollapsibleState.Collapsed);
-            item.description = this.sanguosha.getTranslation('#' + element.trsName);
+            // 武将节点
+            let item = new TreeItem(sanguosha.getTranslation(element.trsName), TreeItemCollapsibleState.Collapsed);
+            item.description = sanguosha.getTranslation('#' + element.trsName);
             item.tooltip = l10n.t('HP:{hp}|Sex:{sex}|Kingdom:{kingdom}', {
                 hp: element.hp,
                 sex: element.isMale ? l10n.t('Male') : l10n.t('Female'),
@@ -47,32 +48,28 @@ export class SanguoshaPackagesProvider implements TreeDataProvider<any> {
                 dark: Uri.joinPath(this.rootUri, 'image', 'generals', 'avatar', element.trsName + '.png')
             };
 
-
-            const editor = window.activeTextEditor;
-            if (editor) {
-                let document = editor.document;
-
-                if (element.loc) {
-                    item.command = {
-                        command: 'extension.gotoPosition',
-                        title: 'Go to Position',
-                        arguments: [document.uri, new Position(element.loc.start.line-1, element.loc.start.column), new Position(element.loc.end.line-1, element.loc.end.column)]
-                    };
-                }
-
+            if (element.loc) {
+                item.command = {
+                    command: 'extension.gotoPosition',
+                    title: 'Go to Position',
+                    arguments: [element.uri, new Position(element.loc.start.line - 1, element.loc.start.column), new Position(element.loc.end.line - 1, element.loc.end.column)]
+                };
             }
 
             return item;
 
         } else if (element instanceof Card) {
-            let item = new TreeItem(this.sanguosha.getTranslation(element.trsName), TreeItemCollapsibleState.None);
+            // 卡牌节点
+            let item = new TreeItem(sanguosha.getTranslation(element.trsName), TreeItemCollapsibleState.None);
             return item;
 
         } else if (element instanceof Skill) {
-            let item = new TreeItem(this.sanguosha.getTranslation(element.trsName), TreeItemCollapsibleState.None);
+            // 技能节点
+            let item = new TreeItem(sanguosha.getTranslation(element.trsName), TreeItemCollapsibleState.None);
             return item;
 
         } else {
+            // 寄能节点
             let item = new TreeItem(l10n.t('Invalid element'), TreeItemCollapsibleState.None);
             return item;
         }
@@ -105,8 +102,8 @@ export class SanguoshaPackagesProvider implements TreeDataProvider<any> {
             });
         } else {
             // 无参数执行，根节点
-            if (this.sanguosha) {
-                return Promise.resolve(this.sanguosha.packages);
+            if (Sanguosha.sanguosha) {
+                return Promise.resolve(Sanguosha.sanguosha.packages);
             } else {
                 window.showInformationMessage(l10n.t('Unable to read the Sanguosha extensions'));
                 return Promise.resolve([]);
@@ -137,5 +134,4 @@ class SanguoshaTreeItem extends TreeItem {
             this.command = cmd;
         }
     }
-
 }

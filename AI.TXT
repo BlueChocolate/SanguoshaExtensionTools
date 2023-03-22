@@ -1,0 +1,185 @@
+我有以下代码：
+export class Package {
+  constructor() { }
+  public type: 'generalPack' | 'cardPack' | 'specialPack' = 'generalPack';
+  public trsName: string = '';
+  public varName: string = '';
+  public generals: General[] = [];
+  public cards: Card[] = [];
+  public ai: Ai[] = [];
+  public uri: string = '';
+  public translations: { key: string; value: string; }[] = [];
+  public getTranslation(key: string) {
+    let value = this.translations.find(item => item.key === key)?.value;
+    return value ? value : key;
+  }
+}
+export class Card {
+    varName: string = '';
+    trsName: string = '';
+    className: string = '';
+    suit: 'spade' | 'heart' | 'diamond' | 'club' | 'none' = 'none';
+    number: number = 0;
+    range: number = 0;
+}
+import { Uri } from "vscode";
+import { Loc } from "./Loc";
+
+export class General {
+  public varName: string = "";
+  public packageVarName: string = "";
+  public trsName: string = "";
+  public kingdom: string = "";
+  public hp: number = 0;
+  public isMale: boolean = true;
+  public isHidden: boolean = false;
+  public isNeverShown: boolean = false;
+  public hegMaxHp: number = 0; // 啥玩意
+  public skills: Skill[] = [];
+
+  public loc?: Loc;
+  public uri?: Uri;
+}
+export class Ai {
+    public packageVarName: string = "";
+    public type: string = "";
+    public skill: string = "";
+    
+    public loc?: Loc;
+    public uri?: Uri;
+}
+我要根据这个类生成的实例在树形图提供者中展示一个树形图，根节点下有多个Package，展开Package下有多个General、Card和Ai节点，
+其中这些节点的name要通过getTranslation(trsName)函数来获取，请问树形图提供者中的代码应该如何编写？
+
+
+你可以使用以下代码来实现：
+
+import * as vscode from 'vscode';
+
+export class PackageTreeDataProvider implements vscode.TreeDataProvider<PackageNode> {
+  private _onDidChangeTreeData: vscode.EventEmitter<PackageNode | undefined> = new vscode.EventEmitter<PackageNode | undefined>();
+  readonly onDidChangeTreeData: vscode.Event<PackageNode | undefined> = this._onDidChangeTreeData.event;
+
+  constructor(private packages: Package[]) {}
+
+  getTreeItem(element: PackageNode): vscode.TreeItem {
+    return element;
+  }
+
+  getChildren(element?: PackageNode): Thenable<PackageNode[]> {
+    if (!element) {
+      return Promise.resolve(this.packages.map(p => new PackageNode(p)));
+    } else if (element instanceof PackageNode) {
+      const children: PackageNode[] = [];
+      if (element.package.generals.length > 0) {
+        children.push(new GeneralNode(element.package.generals, element.package.getTranslation));
+      }
+      if (element.package.cards.length > 0) {
+        children.push(new CardNode(element.package.cards, element.package.getTranslation));
+      }
+      if (element.package.ai.length > 0) {
+        children.push(new AiNode(element.package.ai, element.package.getTranslation));
+      }
+      return Promise.resolve(children);
+    } else {
+      return Promise.resolve([]);
+    }
+  }
+}
+
+class PackageNode extends vscode.TreeItem {
+  constructor(public readonly package: Package) {
+    super(package.trsName, vscode.TreeItemCollapsibleState.Collapsed);
+  }
+
+  get tooltip(): string {
+    return this.package.trsName;
+  }
+
+  get description(): string {
+    return '';
+  }
+
+  iconPath = new vscode.ThemeIcon('package');
+}
+
+class GeneralNode extends vscode.TreeItem {
+  constructor(public readonly generals: General[], private readonly getTranslation: (key: string) => string) {
+    super(getTranslation('generals'), vscode.TreeItemCollapsibleState.Collapsed);
+  }
+
+  get tooltip(): string {
+    return this.getTranslation('generals');
+  }
+
+  get description(): string {
+    return '';
+  }
+
+  iconPath = new vscode.ThemeIcon('symbol-class');
+}
+
+class CardNode extends vscode.TreeItem {
+  constructor(public readonly cards: Card[], private readonly getTranslation: (key: string) => string) {
+    super(getTranslation('cards'), vscode.TreeItemCollapsibleState.Collapsed);
+  }
+
+  get tooltip(): string {
+    return this.getTranslation('cards');
+  }
+
+  get description(): string {
+    return '';
+  }
+
+  iconPath = new vscode.ThemeIcon('symbol-constant');
+}
+
+class AiNode extends vscode.TreeItem {
+  constructor(public readonly ai: Ai[], private readonly getTranslation: (key: string) => string) {
+    super(getTranslation('ai'), vscode.TreeItemCollapsibleState.Collapsed);
+  }
+
+  get tooltip(): string {
+    return this.getTranslation('ai');
+  }
+
+  get description(): string {
+    return '';
+  }
+
+  iconPath = new vscode.ThemeIcon('symbol-variable');
+}
+这里我们定义了一个PackageTreeDataProvider类，它实现了vscode.TreeDataProvider接口。在构造函数中，我们传入了一个Package数组，这个数组中包含了我们要展示的所有数据。在getTreeItem方法中，我们返回了一个PackageNode对象，这个对象继承了vscode.TreeItem类，它表示了树形图中的一个节点。在getChildren方法中，我们根据传入的element参数来返回子节点。如果element是undefined，则返回所有的Package节点；如果element是PackageNode，则返回这个Package节点下的所有子节点。
+
+我们还定义了三个子节点类：GeneralNode、CardNode和AiNode。这些类也都继承了vscode.TreeItem类，它们分别表示了General、Card和Ai节点。在这些类的构造函数中，我们传入了对应的数据和getTranslation函数，这个函数用来获取翻译后的名称。在getChildren方法中，我们返回了这些节点的子节点，这里我们没有子节点，所以返回
+
+已收到消息. 你可以使用以下代码来实现： ```typescript import * as vscode from 'vscode'; export class PackageTreeDataProvider implements vscode.TreeDataProvider<PackageNode> { private _onDidChangeTreeData: vscode.EventEmitter<PackageNode | undefined> = new vscode.EventEmitter<PackageNode | undefined>(); readonly onDidChangeTreeData: vscode.Event<PackageNode | undefined> = this._onDidChangeTreeData.event; constructor(private packages: Package[]) {} getTreeItem(element: PackageNode): vscode.TreeItem { return element; } getChildren(element?: PackageNode): Thenable<PackageNode[]> { if (!element) { return Promise.resolve(this.packages.map(p => new PackageNode(p))); } else if (element instanceof PackageNode) { const children: PackageNode[] = []; if (element.package.generals.length > 0) { children.push(new GeneralNode(element.package.generals, element.package.getTranslation)); } if (element.package.cards.length > 0) { children.push(new CardNode(element.package.cards, element.package.getTranslation)); } if (element.package.ai.length > 0) { children.push(new AiNode(element.package.ai, element.package.getTranslation)); } return Promise.resolve(children); } else { return Promise.resolve([]); } } } class PackageNode extends vscode.TreeItem { constructor(public readonly package: Package) { super(package.trsName, vscode.TreeItemCollapsibleState.Collapsed); } get tooltip(): string { return this.package.trsName; } get description(): string { return ''; } iconPath = new vscode.ThemeIcon('package'); } class GeneralNode extends vscode.TreeItem { constructor(public readonly generals: General[], private readonly getTranslation: (key: string) => string) { super(getTranslation('generals'), vscode.TreeItemCollapsibleState.Collapsed); } get tooltip(): string { return this.getTranslation('generals'); } get description(): string { return ''; } iconPath = new vscode.ThemeIcon('symbol-class'); } class CardNode extends vscode.TreeItem { constructor(public readonly cards: Card[], private readonly getTranslation: (key: string) => string) { super(getTranslation('cards'), vscode.TreeItemCollapsibleState.Collapsed); } get tooltip(): string { return this.getTranslation('cards'); } get description(): string { return ''; } iconPath = new vscode.ThemeIcon('symbol-constant'); } class AiNode extends vscode.TreeItem { constructor(public readonly ai: Ai[], private readonly getTranslation: (key: string) => string) { super(getTranslation('ai'), vscode.TreeItemCollapsibleState.Collapsed); } get tooltip(): string { return this.getTranslation('ai'); } get description(): string { return ''; } iconPath = new vscode.ThemeIcon('symbol-variable'); } ``` 这里我们定义了一个`PackageTreeDataProvider`类，它实现了`vscode.TreeDataProvider`接口。在构造函数中，我们传入了一个`Package`数组，这个数组中包含了我们要展示的所有数据。在`getTreeItem`方法中，我们返回了一个`PackageNode`对象，这个对象继承了`vscode.TreeItem`类，它表示了树形图中的一个节点。在`getChildren`方法中，我们根据传入的`element`参数来返回子节点。如果`element`是`undefined`，则返回所有的`Package`节点；如果`element`是`PackageNode`，则返回这个`Package`节点下的所有子节点。 我们还定义了三个子节点类：`GeneralNode`、`CardNode`和`AiNode`。这些类也都继承了`vscode.TreeItem`类，它们分别表示了`General`、`Card`和`Ai`节点。在这些类的构造函数中，我们传入了对应的数据和`getTranslation`函数，这个函数用来获取翻译后的名称。在`getChildren`方法中，我们返回了这些节点的子节点，这里我们没有子节点，所以返回
+9
+共
+15
+
+点赞
+取消点赞
+共享更多
+继续
+已发送电子邮件. 继续
+这里的getTranslation函数是用来获取翻译后的名称的，你需要根据你的实际情况来实现这个函数。如果你的翻译是存储在文件中的，你可以使用fs模块来读取文件；如果你的翻译是存储在数据库中的，你可以使用相应的数据库模块来查询数据。这里我们只是简单地返回了translations数组中对应的值，如果没有对应的值，则返回key本身。
+
+如果你想要在树形图中显示图标，你可以使用iconPath属性来设置图标。这里我们使用了vscode.ThemeIcon类来创建图标，你也可以使用其他方式来创建图标。
+
+如果你想要在树形图中显示更多的信息，你可以在description属性中返回相应的信息。
+
+如果你想要在树形图中显示更多的节点，你可以创建相应的子节点类，并在getChildren方法中返回这些子节点。
+
+如果你想要在树形图中响应用户的点击事件，你可以在PackageNode类中实现command属性，并在getChildren方法中返回一个CommandNode对象。这个对象继承了vscode.TreeItem类，它表示了一个命令节点。在PackageTreeDataProvider类中，你需要实现getTreeItem方法来返回这个命令节点。
+
+如果你想要在树形图中支持拖拽操作，你可以在PackageNode类中实现contextValue属性，并在getChildren方法中返回一个DraggableNode对象。这个对象继承了vscode.TreeItem类，它表示了一个可拖拽节点。在PackageTreeDataProvider类中，你需要实现getTreeItem方法来返回这个可拖拽节点。
+
+如果你想要在树形图中支持编辑操作，你可以在PackageNode类中实现contextValue属性，并在getChildren方法中返回一个EditableNode对象。这个对象继承了vscode.TreeItem类，它表示了一个可编辑节点。在PackageTreeDataProvider类中，你需要实现getTreeItem方法来返回这个可编辑节点。
+
+如果你想要在树形图中支持过滤操作，你可以在PackageTreeDataProvider类中实现onDidChangeTreeData事件，并在这个事件中调用this._onDidChangeTreeData.fire()方法来触发树形图的刷新操作。在getChildren方法中，你需要根据用户的输入来返回相应的节点。
+
+如果你想要在树形图中支持排序操作，你可以在PackageTreeDataProvider类中实现sort方法，并在这个方法中对节点进行排序。在getChildren方法中，你需要返回已经排序的节点。
+
+如果你想要在树形图中支持过滤、排序和分页操作，你可以使用vscode.TreeData类来实现。这个类提供了getChildren、getParent、getTreeItem、onDidChangeTreeData等方法，可以方便地实现树形图的各种操作。

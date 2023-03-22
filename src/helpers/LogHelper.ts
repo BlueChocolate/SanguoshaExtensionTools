@@ -8,7 +8,7 @@ export class LogHelper{
     // public static channel = vscode.window.createOutputChannel('SanguoshaExtensionTools', 'log');
     private static channel = window.createOutputChannel('SanguoshaExtensionTools', { log: true });
 
-    public static getNowTime() {
+    private static getNowTime() {
         let d = new Date();
         let year = d.getFullYear();
         let month = d.getMonth() + 1;

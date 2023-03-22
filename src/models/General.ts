@@ -1,3 +1,4 @@
+import { Uri } from "vscode";
 import { Loc } from "./Loc";
 
 export class General {
@@ -11,6 +12,7 @@ export class General {
   public isNeverShown: boolean = false;
   public hegMaxHp: number = 0; // 啥玩意
   public skills: Skill[] = [];
-  
+
   public loc?: Loc;
+  public uri?: Uri;
 }

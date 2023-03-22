@@ -1,6 +1,6 @@
 import path = require('path');
 import { Event, EventEmitter, FileChangeType, l10n, TreeDataProvider, TreeItem, TreeItemCollapsibleState, Uri, window } from 'vscode';
-import { SanguoshaHelper } from '../helpers/SanguoshaHelper';
+import { Sanguosha } from '../models/Sanguosha';
 
 export class SanguoshaGeneralsProvider implements TreeDataProvider<GeneralTreeItem> {
     private _onDidChangeTreeData: EventEmitter<GeneralTreeItem | undefined | null | void> = new EventEmitter<GeneralTreeItem | undefined | null | void>();
@@ -32,7 +32,7 @@ export class SanguoshaGeneralsProvider implements TreeDataProvider<GeneralTreeIt
             return Promise.resolve([]);
         } else {
             // 无参数执行，根节点
-            const sanguosha=SanguoshaHelper.sanguosha;
+            const sanguosha = Sanguosha.sanguosha;
             if (sanguosha) {
                 let generals: GeneralTreeItem[] = [];
                 for (const pack of sanguosha.packages) {

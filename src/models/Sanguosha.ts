@@ -1,30 +1,176 @@
 import { LuaAstHelper } from "../helpers/LuaAstHelper";
 import { Package } from "./Package";
 import { General } from "./General";
-import { ConfigurationTarget, FileType, l10n, Uri, window, workspace } from "vscode";
+import { ConfigurationTarget, extensions, FileType, l10n, Uri, window, workspace } from "vscode";
 import { Ai } from "./Ai";
+import path = require("path");
+import { LogHelper } from "../helpers/LogHelper";
+import { FileSystemHelper } from "../helpers/FileSystemHelper";
 
 export abstract class Sanguosha {
 
-  public type: 'qSanguosha' | 'noname' | 'freeKill' = 'qSanguosha';
   public packages: Package[] = [];
-  public ai: Ai[] = [];
-  public translations: { key: string; value: string; }[] = [];
 
-  public getTranslation(key: string) {
-    let value = this.translations.find(item => item.key === key)?.value;
-    return value ? value : key;
+
+  public abstract readRaw(raw: string): void;
+  public abstract load(uri: Uri): void;
+
+  /* NOTE 太阳神三国杀扩展目录结构
+    ├─audio
+    │  ├─bgm(*.ogg)
+    │  ├─death(*.ogg)
+    │  └─skill(*.ogg)
+    ├─extensions(*.lua)
+    ├─image
+    │  ├─animate(*.png)
+    │  ├─big-card(*.png)
+    │  ├─card(*.png)
+    │  ├─fullskin
+    │  │  └─generals
+    │  │      └─full(*.png)
+    │  ├─generals
+    │  │  ├─avatar(*.png)
+    │  │  └─card(*.png)
+    │  └─mark(*.png)
+    └─lua
+        └─ai(*.lua)
+    */
+  public static async createExtensionStructure(uri: Uri, trsName: string) {
+
+    if (uri) {
+      await workspace.fs.createDirectory(Uri.joinPath(uri, 'extensions'));
+      await workspace.fs.createDirectory(Uri.joinPath(uri, 'lua', 'ai'));
+      await workspace.fs.createDirectory(Uri.joinPath(uri, 'audio', 'bgm'));
+      await workspace.fs.createDirectory(Uri.joinPath(uri, 'audio', 'death'));
+      await workspace.fs.createDirectory(Uri.joinPath(uri, 'audio', 'skill'));
+      await workspace.fs.createDirectory(Uri.joinPath(uri, 'image', 'mark'));
+      await workspace.fs.createDirectory(Uri.joinPath(uri, 'image', 'animate'));
+      await workspace.fs.createDirectory(Uri.joinPath(uri, 'image', 'generals', 'card'));
+      await workspace.fs.createDirectory(Uri.joinPath(uri, 'image', 'generals', 'avatar'));
+      await workspace.fs.createDirectory(Uri.joinPath(uri, 'image', 'fullskin', 'generals', 'full'));
+
+      let varName = trsName.length > 1 ? (trsName.slice(0, 1).toUpperCase() + trsName.slice(1).toLowerCase()) : trsName.toUpperCase();
+      const writeStr = varName + ' = sgs.Package("' + trsName + '")\n\nreturn ' + varName;
+      const writeData = Buffer.from(writeStr, 'utf-8');
+
+      await workspace.fs.writeFile(Uri.joinPath(uri, 'extensions', trsName + '.lua'), writeData);
+      await workspace.fs.writeFile(Uri.joinPath(uri, 'lua', 'ai', trsName + '-ai.lua'), new Uint8Array());
+    }
+  }
+  public static getGeneralAvatarByName() {
   }
 
-  readQsgsRaw(luaRaw: string) {
-    let astToSourceResult: string = "";
+  public static getGeneralCardByName() {
+  }
+
+  public static getAvatarByName() {
+  }
+
+  public static sanguosha: Sanguosha;
+
+
+  public static async detachSanguoshaType(rootUri: Uri): Promise<'qSanguosha' | 'noname' | 'freeKill' | undefined> {
+
+
+
     try {
-      const ast = LuaAstHelper.parse(luaRaw);
-      this.readExtensionInfo(ast);
+      // 判断是否存在 .\extensions 目录
+      if (await FileSystemHelper.uriExists(Uri.joinPath(rootUri, 'extensions'), FileType.Directory)) {
 
+        // 判断 .\extensions 文件夹是否存在 *.lua 文件
+        const extensionsTuples = await workspace.fs.readDirectory(Uri.joinPath(rootUri, 'extensions'));
+        if (extensionsTuples.filter((item => item[1] === FileType.File && path.extname(item[0]).toLowerCase() === ".lua")).length > 0) {
 
+          // .\extensions 文件夹存在 lua 文件，是太阳神三国杀
+          return 'qSanguosha';
+        } else {
+
+          // 判断是否存在 .\lua\ai 目录
+          if (await FileSystemHelper.uriExists(Uri.joinPath(rootUri, 'lua', 'ai'), FileType.Directory)) {
+
+            // 判断 .\extensions 文件夹是否存在 *.lua 文件
+            const extensionsTuples = await workspace.fs.readDirectory(Uri.joinPath(rootUri, 'lua', 'ai'));
+            if (extensionsTuples.filter((item => item[1] === FileType.File && path.extname(item[0]).toLowerCase() === ".lua")).length > 0) {
+
+              // .\lua\ai 文件夹存在 lua 文件，是太阳神三国杀
+              return 'qSanguosha';
+            } else {
+              return undefined;
+            }
+          } else {
+            return undefined;
+          }
+        }
+      } else {
+        // REVIEW 考虑一下文件扩展名大小写的问题
+        // 判断是根目录否存在 extension.js 文件
+        if (await FileSystemHelper.uriExists(Uri.joinPath(rootUri, 'extension.js'), FileType.File)) {
+          return 'noname';
+        } else {
+          return undefined;
+        }
+      }
+    } catch (error) {
+      let e = error as Error;
+      LogHelper.log(l10n.t('Failed to detect the Sanguosha extension type {errorName} {errorMessage}', { errorName: e.name, errorMessage: e.message }), 'error');
+      return undefined;
+    }
+  }
+
+  public static async showSanguoshaTypeQuickPicker(): Promise<void> {
+    // 弹出快速选择
+    const select = await window.showQuickPick(
+      [
+        { label: 'QSanguosha(Default)', description: '太阳神三国杀（默认）', value: 'qSanguosha' },
+        { label: 'Noname', description: '无名杀', value: 'noname' },
+        { label: 'FreeKill', description: '自由杀？', value: 'freeKill' }
+      ],
+      { placeHolder: '这似乎是太阳神三国杀的扩展，请手动确认' });
+
+    if (select) {
+      // 默认是储存到 Workspace
+      await workspace.getConfiguration().update('sanguoshaExtensionTools.extension.type', select.value);
+    } else {
+      // 其实这个会自动识别是工作区还是文件夹
+      await workspace.getConfiguration().update('sanguoshaExtensionTools.extension.type', 'qSanguosha', ConfigurationTarget.Workspace);
+    }
+  }
+}
+
+export class SunGod extends Sanguosha {
+
+  public createExtensionStructure(uri: Uri, trsName: string): void {
+    throw new Error("Method not implemented.");
+  }
+
+  public async load(uri: Uri): Promise<SunGod> {
+    const uriExtensions = Uri.joinPath(uri, 'extensions');
+    const uriLuaAi = Uri.joinPath(uri, 'lua', 'ai');
+
+    try {
+      if (await FileSystemHelper.uriExists(uriExtensions)) {
+        const entries = await workspace.fs.readDirectory(uriExtensions);
+        const luaFiles = entries.filter(([name, type]) => type === FileType.File && name.toLowerCase().endsWith(".lua")).map(([name]) => Uri.joinPath(uriExtensions, name));
+        for (const luaFile of luaFiles) {
+          LogHelper.log(l10n.t('Reading ${luaFilePath}', { luaFilePath: luaFile.path }), 'info');
+          const luaData = await workspace.fs.readFile(luaFile);
+          // 使用Buffer.from或其他方法将Uint8Array转换为字符串，并返回
+          const luaText = Buffer.from(luaData).toString();
+          this.readRaw(luaText);
+        }
+      }
+
+    } catch (error) {
+    }
+    return this;
+  }
+
+  public readRaw(raw: string): void {
+    let currentPackage: Package;
+    try {
+      const ast = LuaAstHelper.parse(raw);
+      this.readExtensionLua(ast,);
       console.log(this.packages);
-      console.log(this.translations);
 
       // rebuildTree(ast, function (node: any) {
       //   delete node['loc'];
@@ -36,7 +182,10 @@ export abstract class Sanguosha {
     }
   }
 
-  readExtensionInfo(ast: any) {
+
+
+  private readExtensionLua(ast: any) {
+
     switch (Object.prototype.toString.call(ast)) {
 
       // 访问到数组
@@ -45,7 +194,7 @@ export abstract class Sanguosha {
         for (const key in ast) {
           // 判断属性是不是自己定义的，可以排除类似 toString() 之类的东西
           if (Object.prototype.hasOwnProperty.call(ast, key)) {
-            this.readExtensionInfo(ast[key]);
+            this.readExtensionLua(ast[key]);
           }
         } break;
 
@@ -57,9 +206,9 @@ export abstract class Sanguosha {
 
             // NOTE 读取扩展包赋值语句
             // Dominion=sgs.Package("dominion")
-            const packageInfo = tryReadPackage(ast);
+            const packageInfo = tryReadSgsPackage(ast);
             if (packageInfo) {
-              // 如果数组列表不存在
+              // 排除重复扩展包名
               if (this.packages.every(pack => pack.trsName !== packageInfo.pack.trsName)) {
                 this.packages.push(packageInfo.pack);
               }
@@ -67,104 +216,104 @@ export abstract class Sanguosha {
 
             // NOTE 读取武将赋值语句
             // Rem=sgs.General(Dominion,"Rem","magic",3,false)
-            const generalInfo = tryReadGeneral(ast);
+            const generalInfo = tryReadSgsGeneral(ast);
             if (generalInfo) {
-              let currentPackage = this.packages.find(pack => pack.varName === generalInfo.general.packageVarName);
-              if (currentPackage) {
-                currentPackage.generals.push(generalInfo.general);
+              let generalPackage = this.packages.find(pack => pack.varName === generalInfo.general.packageVarName);
+              if (generalPackage) {
+                generalPackage.generals.push(generalInfo.general);
               }
             }
-            // if (tryReadGeneral(ast)) { return; }
-            this.readExtensionInfo(ast['variables']);
-            this.readExtensionInfo(ast['init']);
+            this.readExtensionLua(ast['variables']);
+            this.readExtensionLua(ast['init']);
             break;
           case 'UnaryExpression':
-            this.readExtensionInfo(ast['argument']);
+            this.readExtensionLua(ast['argument']);
             break;
           case 'BinaryExpression':
           case 'LogicalExpression':
-            this.readExtensionInfo(ast['left']);
-            this.readExtensionInfo(ast['right']);
+            this.readExtensionLua(ast['left']);
+            this.readExtensionLua(ast['right']);
             break;
           case 'FunctionDeclaration':
-            this.readExtensionInfo(ast['identifier']);
-            this.readExtensionInfo(ast['parameters']);
-            this.readExtensionInfo(ast['body']);
+            this.readExtensionLua(ast['identifier']);
+            this.readExtensionLua(ast['parameters']);
+            this.readExtensionLua(ast['body']);
             break;
           case 'ForGenericStatement':
-            this.readExtensionInfo(ast['variables']);
-            this.readExtensionInfo(ast['iterators']);
-            this.readExtensionInfo(ast['body']);
+            this.readExtensionLua(ast['variables']);
+            this.readExtensionLua(ast['iterators']);
+            this.readExtensionLua(ast['body']);
             break;
           case 'IfClause':
           case 'ElseifClause':
           case 'WhileStatement':
           case 'RepeatStatement':
-            this.readExtensionInfo(ast['condition']);
+            this.readExtensionLua(ast['condition']);
           /* fall through */
           case 'Chunk':
           case 'ElseClause':
           case 'DoStatement':
-            this.readExtensionInfo(ast['body']);
-            this.readExtensionInfo(ast['globals']);
-            this.readExtensionInfo(ast['comments']);
+            this.readExtensionLua(ast['body']);
+            this.readExtensionLua(ast['globals']);
+            this.readExtensionLua(ast['comments']);
             break;
           case 'ForNumericStatement':
-            this.readExtensionInfo(ast['variable']);
-            this.readExtensionInfo(ast['start']);
-            this.readExtensionInfo(ast['end']);
-            this.readExtensionInfo(ast['step']);
-            this.readExtensionInfo(ast['body']);
+            this.readExtensionLua(ast['variable']);
+            this.readExtensionLua(ast['start']);
+            this.readExtensionLua(ast['end']);
+            this.readExtensionLua(ast['step']);
+            this.readExtensionLua(ast['body']);
             break;
           case 'ReturnStatement':
-            this.readExtensionInfo(ast['arguments']);
+            this.readExtensionLua(ast['arguments']);
             break;
           case 'IfStatement':
-            this.readExtensionInfo(ast['clauses']);
+            this.readExtensionLua(ast['clauses']);
             break;
           case 'MemberExpression':
-            this.readExtensionInfo(ast['base']);
-            this.readExtensionInfo(ast['identifier']);
+            this.readExtensionLua(ast['base']);
+            this.readExtensionLua(ast['identifier']);
             break;
           case 'IndexExpression':
-            this.readExtensionInfo(ast['base']);
-            this.readExtensionInfo(ast['index']);
+            this.readExtensionLua(ast['base']);
+            this.readExtensionLua(ast['index']);
             break;
           case 'LabelStatement':
-            this.readExtensionInfo(ast['label']);
+            this.readExtensionLua(ast['label']);
             break;
           case 'CallStatement':
-            this.readExtensionInfo(ast['expression']);
+            this.readExtensionLua(ast['expression']);
             break;
           case 'GotoStatement':
-            this.readExtensionInfo(ast['label']);
+            this.readExtensionLua(ast['label']);
             break;
           case 'TableConstructorExpression':
-            this.readExtensionInfo(ast['fields']);
+            this.readExtensionLua(ast['fields']);
             break;
           case 'TableKey':
           case 'TableKeyString':
-            this.readExtensionInfo(ast['key']);
-          /* fall through */
+            this.readExtensionLua(ast['key']);
+          /* fall through 贯穿执行 */
           case 'TableValue':
-            this.readExtensionInfo(ast['value']);
+            this.readExtensionLua(ast['value']);
             break;
           case 'CallExpression':
-            this.readExtensionInfo(ast['base']);
-            this.readExtensionInfo(ast['arguments']);
+            this.readExtensionLua(ast['base']);
+            this.readExtensionLua(ast['arguments']);
             break;
           case 'TableCallExpression':
 
             // NOTE 读取翻译表调用语句
+            // sgs.LoadTranslationTable
             let translationInfo = tryReadTranslation(ast);
             if (translationInfo) {
-              this.translations = [...this.translations, ...translationInfo.translations];
+              this.packages[this.packages.length - 1].translations = [...this.packages[this.packages.length - 1].translations, ...translationInfo.translations];
             }
-            this.readExtensionInfo(ast['arguments']);
+            this.readExtensionLua(ast['arguments']);
           /* fall through */
           case 'StringCallExpression':
-            this.readExtensionInfo(ast['base']);
-            this.readExtensionInfo(ast['argument']);
+            this.readExtensionLua(ast['base']);
+            this.readExtensionLua(ast['argument']);
             break;
           case 'Identifier':
           case 'NumericLiteral':
@@ -183,7 +332,7 @@ export abstract class Sanguosha {
         break;
     }
 
-    function tryReadPackage(ast: any) {
+    function tryReadSgsPackage(ast: any) {
       let pack = new Package();
 
       let isReadSuccess: boolean = false;
@@ -203,8 +352,7 @@ export abstract class Sanguosha {
                 if (identifier) {
                   pack.varName = identifier.name;
 
-                  // 获取函数的参数
-                  // GeneralPack CardPack SpecialPack
+                  // 获取函数的参数 GeneralPack CardPack SpecialPack
                   let args = sgsFunction.args;
                   switch (args.length) {
                     case 2:
@@ -239,9 +387,6 @@ export abstract class Sanguosha {
                       console.error("sgs.Package 函数参数数量错误！");
                       break;
                   }
-
-
-
                 }
               }
             }
@@ -259,7 +404,7 @@ export abstract class Sanguosha {
       }
     }
 
-    function tryReadGeneral(ast: any) {
+    function tryReadSgsGeneral(ast: any) {
       let general = new General();
 
       let isReadSuccess: boolean = false;
@@ -382,53 +527,60 @@ export abstract class Sanguosha {
     }
   }
 
-  readNonameRaw() {
-    throw new Error(l10n.t('Function not implemented.'));
+  public static setExternalLibrary(folder: string, enable: boolean) {
+    const extensionId = 'undefined_publisher.sanguosha-extension-tools'; // this id is case sensitive
+    const extensionPath = extensions.getExtension(extensionId)?.extensionPath;
+    const folderPath = extensionPath + "\\" + folder;
+    const config = workspace.getConfiguration("Lua");
+    const library: string[] | undefined = config.get("workspace.library");
+    if (library && extensionPath) {
+      // 删除路径的任何旧版本，例如 publisher.name-0.0.1
+      for (let i = library.length - 1; i >= 0; i--) {
+        const el = library[i];
+        const isSelfExtension = el.indexOf(extensionId) > -1;
+        const isCurrentVersion = el.indexOf(extensionPath) > -1;
+        if (isSelfExtension && !isCurrentVersion) {
+          library.splice(i, 1);
+        }
+      }
+      const index = library.indexOf(folderPath);
+      if (enable) {
+        if (index === -1) {
+          library.push(folderPath);
+        }
+      }
+      else {
+        if (index > -1) {
+          library.splice(index, 1);
+        }
+      }
+      config.update("workspace.library", library, true);
+    }
   }
+}
 
-  public abstract readRaw(): void;
-  public abstract load(): void;
-
-  static getGeneralAvatarByName() {
+export class NoName extends Sanguosha {
+  public readRaw(raw: string): void {
+    throw new Error("Method not implemented.");
   }
-
-  static getGeneralCardByName() {
+  public load(uri: Uri): void {
+    throw new Error("Method not implemented.");
   }
-
-  static getAvatarByName() {
+  public createExtensionStructure(uri: Uri, trsName: string): void {
+    throw new Error("Method not implemented.");
   }
-
-  
 
 }
 
-export class SunGod extends Sanguosha {
-
-  public load(): void {
+export class FreeKill extends Sanguosha {
+  public readRaw(raw: string): void {
     throw new Error("Method not implemented.");
   }
-  public readRaw(): void {
-    throw new Error(l10n.t('Method not implemented.'));
-  }
-}
-
-export class Noname extends Sanguosha{
-  public readRaw(): void {
+  public load(uri: Uri): void {
     throw new Error("Method not implemented.");
   }
-  public load(): void {
+  public createExtensionStructure(uri: Uri, trsName: string): void {
     throw new Error("Method not implemented.");
   }
-
-}
-
-export class FreeKill extends Sanguosha{
-  public readRaw(): void {
-    throw new Error("Method not implemented.");
-  }
-  public load(): void {
-    throw new Error("Method not implemented.");
-  }
-
 
 }

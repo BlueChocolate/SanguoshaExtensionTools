@@ -3,9 +3,8 @@ import { SanguoshaPackagesProvider } from './providers/SanguoshaPackagesProvider
 import { SanguoshaCodelensProvider } from './providers/SanguoshaCodelensProvider';
 import { LuaAstHelper } from "./helpers/LuaAstHelper";
 import { LogHelper } from "./helpers/LogHelper";
-import { Disposable, ExtensionContext, Uri, l10n, workspace, window, languages, commands, ConfigurationTarget, StatusBarAlignment, Position, Range, TextEditorRevealType, Selection, extensions } from 'vscode';
-import { SanguoshaHelper } from './helpers/SanguoshaHelper';
-import { FreeKill, Noname, SunGod } from './models/Sanguosha';
+import { Disposable, ExtensionContext, Uri, l10n, workspace, window, languages, commands, ConfigurationTarget, StatusBarAlignment, Position, Range, TextEditorRevealType, Selection, extensions, FileType } from 'vscode';
+import { FreeKill, NoName, Sanguosha, SunGod } from './models/Sanguosha';
 
 // 一次性对象列表
 let disposables: Disposable[] = [];
@@ -43,13 +42,11 @@ export async function activate(context: ExtensionContext) {
 				commands.executeCommand("editor.action.formatDocument");
 			});
 
-			window
-				.showInformationMessage("Do you want to do this?", "Yes", "No", "Skip")
-				.then(answer => {
-					if (answer === "Yes") {
-						// Run function
-					}
-				});
+			window.showInformationMessage("Do you want to do this?", "Yes", "No", "Skip").then(answer => {
+				if (answer === "Yes") {
+					// Run function
+				}
+			});
 		}
 
 
@@ -70,7 +67,7 @@ export async function activate(context: ExtensionContext) {
 	});
 	// 创建三国杀扩展
 	commands.registerCommand('sanguoshaExtensionTools.createNewExtension', async () => {
-
+		
 		// 弹出快速选择器
 		const select = await window.showQuickPick([
 			{ label: 'QSanguosha', description: l10n.t('QSanguosha'), id: 1 },
@@ -101,7 +98,7 @@ export async function activate(context: ExtensionContext) {
 						});
 
 						if (urls && urls.length > 0) {
-							await SanguoshaHelper.createNewExtension(urls[0], input);
+							await Sanguosha.createExtensionStructure(urls[0], input);
 							// ANCHOR - 这里填 await 的话，就要等这个消息框被关闭了才会执行下一条语句
 							// window.showInformationMessage('新建扩展包：' + urls[0]);
 							// 不填写 url 参数的话，系统会自动打开一个文件夹选择对话框
@@ -232,41 +229,38 @@ export async function activate(context: ExtensionContext) {
 	if (type) {
 		switch (type) {
 			case 'qSanguosha':
-				SanguoshaHelper.sanguosha = new SunGod();
+				context.workspaceState.update('sanguosha', new SunGod());
 				LogHelper.log(l10n.t('The Sanguosha extension type saved in the workspace configuration is QSanguosha!'), 'info');
 				break;
 			case 'noname':
-				SanguoshaHelper.sanguosha = new Noname();
+				context.workspaceState.update('sanguosha', new NoName());
 				LogHelper.log(l10n.t('The Sanguosha extension type saved in the workspace configuration is Noname!'), 'info');
 				break;
 			case 'freeKill':
-				SanguoshaHelper.sanguosha = new FreeKill();
+				context.workspaceState.update('sanguosha', new FreeKill());
 				LogHelper.log(l10n.t('The Sanguosha extension type saved in the workspace configuration is Freekill!'), 'info');
 				break;
 			default:
-				SanguoshaHelper.sanguosha = undefined;
+				context.workspaceState.update('sanguosha', undefined);
 				LogHelper.log(l10n.t('The Sanguosha extension type saved in the workspace configuration is invalid!'), 'error');
 				break;
 		}
 	}
 
 	// 判断是否正确读取了
-	if (SanguoshaHelper.sanguosha) {
-		
-	}else{
-		type = await SanguoshaHelper.detachSanguoshaType(rootUri);
+	if (context.workspaceState.get<Sanguosha>('sanguosha')) {
+
+	} else {
+		type = await Sanguosha.detachSanguoshaType(rootUri);
 		if (type) {
 
-			
+
 		} else {
 
 			LogHelper.log(l10n.t('Detach Sanguosha type Failed!'), 'error');
 
 		}
 	}
-	
-
-	
 
 
 	// NOTE 树形视图相关
